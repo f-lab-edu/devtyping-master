@@ -1,0 +1,11 @@
+{
+  "name": "devtyping-master",
+  "version": "0.1.0",
+  "description": "Week 1 vanilla JS typing game MVP",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev-server.js",
+    "build": "node scripts/build.js",
+    "test": "echo \"No automated tests yet\""
+  }
+}
