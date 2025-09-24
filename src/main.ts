@@ -1,12 +1,48 @@
-const app = document.getElementById("app");
+interface WordState {
+  id: string;
+  text: string;
+  x: number;
+  y: number;
+  speed: number;
+  element: HTMLDivElement;
+  missed: boolean;
+}
 
-const GAME_DURATION_MS = 60000;
-const COUNTDOWN_START = 3;
-const WORD_SPAWN_INTERVAL_MS = 2000;
-const CLEAR_SCORE = 120;
-const WORD_SPEED_RANGE = [70, 120];
+interface GameState {
+  startedAt: number;
+  endsAt: number;
+  score: number;
+  hits: number;
+  misses: number;
+  words: WordState[];
+  area: HTMLDivElement;
+  input: HTMLInputElement;
+  timerDisplay: HTMLElement;
+  scoreDisplay: HTMLElement;
+  accuracyDisplay: HTMLElement;
+  running: boolean;
+}
+interface AppState {
+  view: "name" | "countdown" | "game" | "result";
+  playerName: string;
+  countdownValue: number;
+  game: GameState | null;
+  result: {
+    score: number;
+    hits: number;
+    misses: number;
+  } | null;
+}
 
-const WORD_BANK = [
+const app = document.getElementById("app") as HTMLElement;
+
+const GAME_DURATION_MS: number = 60000;
+const COUNTDOWN_START: number = 3;
+const WORD_SPAWN_INTERVAL_MS: number = 2000;
+const CLEAR_SCORE: number = 120;
+const WORD_SPEED_RANGE: [number, number] = [70, 120];
+
+const WORD_BANK: string[] = [
   "function",
   "variable",
   "object",
@@ -44,7 +80,7 @@ const WORD_BANK = [
   "router",
 ];
 
-const state = {
+const state: AppState = {
   view: "name",
   playerName: "",
   countdownValue: COUNTDOWN_START,
@@ -52,16 +88,16 @@ const state = {
   result: null,
 };
 
-let countdownTimerId = null;
-let spawnTimerId = null;
-let animationFrameId = null;
+let countdownTimerId: ReturnType<typeof setInterval> | null = null;
+let spawnTimerId: ReturnType<typeof setInterval> | null = null;
+let animationFrameId: number | null = null;
 
-function setView(nextView) {
+function setView(nextView: AppState["view"]): void {
   state.view = nextView;
   render();
 }
 
-function render() {
+function render(): void {
   if (state.view === "name") {
     renderNameScreen();
   } else if (state.view === "countdown") {
@@ -73,7 +109,7 @@ function render() {
   }
 }
 
-function renderNameScreen() {
+function renderNameScreen(): void {
   app.innerHTML = "";
 
   const card = document.createElement("div");
@@ -114,7 +150,7 @@ function renderNameScreen() {
   card.appendChild(form);
   app.appendChild(card);
 
-  form.addEventListener("submit", event => {
+  form.addEventListener("submit", (event: Event) => {
     event.preventDefault();
     const value = input.value.trim();
     if (!value) {
@@ -129,7 +165,7 @@ function renderNameScreen() {
   window.requestAnimationFrame(() => input.focus());
 }
 
-function renderCountdownScreen() {
+function renderCountdownScreen(): void {
   app.innerHTML = "";
 
   const card = document.createElement("div");
@@ -151,7 +187,7 @@ function renderCountdownScreen() {
   app.appendChild(card);
 }
 
-function renderGameScreen() {
+function renderGameScreen(): void {
   app.innerHTML = "";
 
   const card = document.createElement("div");
@@ -163,16 +199,16 @@ function renderGameScreen() {
 
   const playerStat = createStatBlock("플레이어", state.playerName);
   const timerStat = createStatBlock("남은 시간", "60.0s");
-  timerStat.querySelector(".stat-value").id = "timer-display";
+  timerStat.querySelector(".stat-value")!.id = "timer-display";
   const scoreStat = createStatBlock("점수", "0");
-  scoreStat.querySelector(".stat-value").id = "score-display";
+  scoreStat.querySelector(".stat-value")!.id = "score-display";
 
   header.appendChild(playerStat);
   header.appendChild(timerStat);
   header.appendChild(scoreStat);
 
   const accuracyBlock = createStatBlock("정확도", "100%");
-  accuracyBlock.querySelector(".stat-value").id = "accuracy-display";
+  accuracyBlock.querySelector(".stat-value")!.id = "accuracy-display";
 
   const gameArea = document.createElement("div");
   gameArea.className = "game-area";
@@ -212,9 +248,9 @@ function renderGameScreen() {
     words: [],
     area: gameArea,
     input: typingInput,
-    timerDisplay: document.getElementById("timer-display"),
-    scoreDisplay: document.getElementById("score-display"),
-    accuracyDisplay: document.getElementById("accuracy-display"),
+    timerDisplay: document.getElementById("timer-display")!,
+    scoreDisplay: document.getElementById("score-display")!,
+    accuracyDisplay: document.getElementById("accuracy-display")!,
     running: true,
   };
 
@@ -239,7 +275,7 @@ function renderGameScreen() {
     }
 
     const skipped = state.game.words.shift();
-    markMiss(skipped);
+    skipped && markMiss(skipped);
     state.game.input.value = "";
     state.game.input.focus();
   });
@@ -249,7 +285,7 @@ function renderGameScreen() {
   startGameLoop();
 }
 
-function renderResultScreen() {
+function renderResultScreen(): void {
   app.innerHTML = "";
 
   const card = document.createElement("div");
@@ -257,7 +293,7 @@ function renderResultScreen() {
 
   const outcomeBadge = document.createElement("div");
   outcomeBadge.className = "badge";
-  const outcome = state.result.score >= CLEAR_SCORE ? "CLEAR" : "FAIL";
+  const outcome = state.result!.score >= CLEAR_SCORE ? "CLEAR" : "FAIL";
   outcomeBadge.textContent = outcome;
 
   const title = document.createElement("h1");
@@ -269,18 +305,18 @@ function renderResultScreen() {
 
   const resultScore = document.createElement("div");
   resultScore.className = "result-score";
-  resultScore.textContent = state.result.score + "점";
+  resultScore.textContent = state.result!.score + "점";
 
   const details = document.createElement("div");
   details.className = "result-details";
 
   const accuracyValue =
-    state.result.hits + state.result.misses === 0
+    state.result!.hits + state.result!.misses === 0
       ? 100
-      : Math.round((state.result.hits / (state.result.hits + state.result.misses)) * 100);
+      : Math.round((state.result!.hits / (state.result!.hits + state.result!.misses)) * 100);
 
-  details.appendChild(createResultRow("정확히 친 단어", state.result.hits + " 개"));
-  details.appendChild(createResultRow("놓친 단어", state.result.misses + " 개"));
+  details.appendChild(createResultRow("정확히 친 단어", state.result!.hits + " 개"));
+  details.appendChild(createResultRow("놓친 단어", state.result!.misses + " 개"));
   details.appendChild(createResultRow("정확도", accuracyValue + "%"));
 
   const retryButton = document.createElement("button");
@@ -313,7 +349,7 @@ function renderResultScreen() {
   });
 }
 
-function createStatBlock(labelText, valueText) {
+function createStatBlock(labelText: string, valueText: string): HTMLDivElement {
   const wrapper = document.createElement("div");
   wrapper.className = "stat-block";
 
@@ -330,7 +366,7 @@ function createStatBlock(labelText, valueText) {
   return wrapper;
 }
 
-function createResultRow(labelText, valueText) {
+function createResultRow(labelText: string, valueText: string): HTMLDivElement {
   const row = document.createElement("div");
   row.className = "result-row";
 
@@ -346,7 +382,7 @@ function createResultRow(labelText, valueText) {
 }
 
 function startCountdown() {
-  clearInterval(countdownTimerId);
+  countdownTimerId && clearInterval(countdownTimerId);
   state.countdownValue = COUNTDOWN_START;
   setView("countdown");
 
@@ -357,7 +393,7 @@ function startCountdown() {
     }
 
     if (state.countdownValue < 0) {
-      clearInterval(countdownTimerId);
+      countdownTimerId && clearInterval(countdownTimerId);
       countdownTimerId = null;
       setView("game");
     }
@@ -372,7 +408,7 @@ function startSpawningWords() {
 function startGameLoop() {
   let lastFrame = performance.now();
 
-  const loop = now => {
+  const loop = (now: number) => {
     if (!state.game || !state.game.running) {
       return;
     }
@@ -426,13 +462,13 @@ function spawnWord() {
   state.game.words.push(wordState);
 }
 
-function getRandomSpeed() {
+function getRandomSpeed(): number {
   const min = WORD_SPEED_RANGE[0];
   const max = WORD_SPEED_RANGE[1];
   return Math.random() * (max - min) + min;
 }
 
-function updateWords(delta) {
+function updateWords(delta: number): void {
   if (!state.game) {
     return;
   }
@@ -485,7 +521,7 @@ function submitTypedWord() {
   state.game.input.focus();
 }
 
-function markMiss(word) {
+function markMiss(word: WordState): void {
   if (!state.game || !word || word.missed) {
     return;
   }
@@ -502,7 +538,7 @@ function markMiss(word) {
   updateAccuracy();
 }
 
-function updateTimer(now) {
+function updateTimer(now: number): void {
   if (!state.game) {
     return;
   }
@@ -519,7 +555,7 @@ function updateScore() {
   state.game.scoreDisplay.textContent = String(state.game.score);
 }
 
-function updateAccuracy() {
+function updateAccuracy(): void {
   if (!state.game) {
     return;
   }
@@ -529,7 +565,7 @@ function updateAccuracy() {
   state.game.accuracyDisplay.textContent = value + "%";
 }
 
-function finishGame() {
+function finishGame(): void {
   if (!state.game || !state.game.running) {
     return;
   }
@@ -562,7 +598,7 @@ function finishGame() {
   setView("result");
 }
 
-function resetGameState(resetName) {
+function resetGameState(resetName: boolean): void {
   if (animationFrameId) {
     cancelAnimationFrame(animationFrameId);
     animationFrameId = null;
