@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const srcDir = path.resolve(__dirname, '..', 'src');
 const distDir = path.resolve(__dirname, '..', 'dist');
@@ -27,6 +28,19 @@ if (!fs.existsSync(srcDir)) {
   return;
 }
 
+// Clean dist directory
 fs.rmSync(distDir, { recursive: true, force: true });
-copyDir(srcDir, distDir);
-console.log('Build output copied to dist/.');
+fs.mkdirSync(distDir, { recursive: true });
+
+// Compile TypeScript files with Babel
+console.log('Compiling TypeScript files with Babel...');
+try {
+  execSync('npx babel src --out-dir dist --extensions ".ts,.js" --copy-files', {
+    cwd: path.resolve(__dirname, '..'),
+    stdio: 'inherit'
+  });
+  console.log('Build completed successfully!');
+} catch (error) {
+  console.error('Build failed:', error.message);
+  process.exitCode = 1;
+}
