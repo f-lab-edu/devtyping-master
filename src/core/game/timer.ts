@@ -47,7 +47,7 @@ export function startCountdown(): void {
 }
 
 export function startSpawningWords(): void {
-  const { spawnWord } = require("./game-logic"); // 순환 참조 방지
+  const { spawnWord } = require("./game-engine"); // 순환 참조 방지
 
   spawnWord();
   timers.spawnId = setInterval(spawnWord, 2000); // WORD_SPAWN_INTERVAL_MS

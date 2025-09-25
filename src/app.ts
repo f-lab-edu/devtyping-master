@@ -1,7 +1,9 @@
 import { renderCountdownScreen, renderNameScreen, renderGameScreen, renderResultScreen } from "./components/screens";
+import { setAppContainer } from "./core/game";
 import { stateManager } from "./core/state";
 
 const app = document.getElementById("app") as HTMLElement;
+setAppContainer(app);
 
 function render(): void {
   switch (stateManager.snapshot.view) {
