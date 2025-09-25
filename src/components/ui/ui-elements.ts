@@ -36,6 +36,7 @@ export function createInput(placeholder: string, type: string = "text"): HTMLInp
   input.placeholder = placeholder;
   return input;
 }
+
 export function createResultRow(labelText: string, valueText: string): HTMLDivElement {
   const row = document.createElement("div");
   row.className = "result-row";

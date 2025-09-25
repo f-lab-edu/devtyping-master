@@ -24,7 +24,7 @@ export function renderNameScreen(container: HTMLElement): void {
   label.setAttribute("for", "playerName");
   label.textContent = "플레이어 이름";
 
-  const input = createInput("예: 코딩라이언");
+  const input = createInput("예: 호두누나!");
   input.required = true;
 
   const button = createButton("게임 시작");
