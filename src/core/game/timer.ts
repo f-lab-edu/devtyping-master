@@ -1,6 +1,6 @@
 import { COUNTDOWN_START } from "../constants";
 import { renderCountdownScreen } from "../../components/screens";
-import { setView, state } from "../state";
+import { stateManager } from "../state";
 import { finishGame, updateWords } from "./game-engine";
 import { updateTimer } from "../../utils";
 
@@ -27,21 +27,21 @@ export function setAppContainer(container: HTMLElement): void {
 export function startCountdown(): void {
   clearCountdownTimer();
 
-  state.countdownValue = COUNTDOWN_START;
-  setView("countdown");
+  stateManager.setCountdown(COUNTDOWN_START);
+  stateManager.setView("countdown");
 
   timers.countdownId = setInterval(() => {
-    state.countdownValue -= 1;
+    const current = stateManager.tickCountdown();
 
-    if (state.countdownValue >= 0) {
+    if (current >= 0) {
       if (appContainer) {
         renderCountdownScreen(appContainer); // ✅ 타입스크립트가 여기서는 HTMLElement임을 인식
       }
     }
 
-    if (state.countdownValue < 0) {
+    if (current < 0) {
       clearCountdownTimer();
-      setView("game");
+      stateManager.setView("game");
     }
   }, 1000);
 }
@@ -57,7 +57,7 @@ export function startGameLoop(): void {
   let lastFrame = performance.now();
 
   const loop = (now: number) => {
-    if (!state.game || !state.game.running) {
+    if (!stateManager.snapshot.game || !stateManager.snapshot.game.running) {
       return;
     }
 
@@ -67,7 +67,7 @@ export function startGameLoop(): void {
     updateWords(delta);
     updateTimer(now);
 
-    if (now >= state.game.endsAt) {
+    if (now >= stateManager.snapshot.game.endsAt) {
       finishGame();
       return;
     }

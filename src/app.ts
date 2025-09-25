@@ -1,15 +1,10 @@
-import {
-  renderCountdownScreen,
-  renderNameScreen,
-  renderGameScreen,
-  renderResultScreen
-} from "./components/screens";
-import { setView, state } from "./core/state";
+import { renderCountdownScreen, renderNameScreen, renderGameScreen, renderResultScreen } from "./components/screens";
+import { stateManager } from "./core/state";
 
 const app = document.getElementById("app") as HTMLElement;
 
 function render(): void {
-  switch (state.view) {
+  switch (stateManager.snapshot.view) {
     case "name":
       renderNameScreen(app);
       break;
@@ -26,7 +21,7 @@ function render(): void {
 }
 
 function startApp(): void {
-  setView("name");
+  stateManager.setView("name");
   render();
 }
 

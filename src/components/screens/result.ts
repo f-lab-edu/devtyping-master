@@ -1,6 +1,6 @@
 import { CLEAR_SCORE } from "../../core/constants";
 import { startCountdown } from "../../core/game";
-import { resetGameState, setView, state } from "../../core/state";
+import { stateManager } from "../../core/state";
 import { createResultRow } from "../ui";
 
 export function renderResultScreen(container: HTMLElement): void {
@@ -11,11 +11,11 @@ export function renderResultScreen(container: HTMLElement): void {
 
   const outcomeBadge = document.createElement("div");
   outcomeBadge.className = "badge";
-  const outcome = state.result!.score >= CLEAR_SCORE ? "CLEAR" : "FAIL";
+  const outcome = stateManager.snapshot.result!.score >= CLEAR_SCORE ? "CLEAR" : "FAIL";
   outcomeBadge.textContent = outcome;
 
   const title = document.createElement("h1");
-  title.textContent = state.playerName + " 님의 결과";
+  title.textContent = stateManager.snapshot.playerName + " 님의 결과";
 
   const subtitle = document.createElement("p");
   subtitle.textContent =
@@ -23,18 +23,22 @@ export function renderResultScreen(container: HTMLElement): void {
 
   const resultScore = document.createElement("div");
   resultScore.className = "result-score";
-  resultScore.textContent = state.result!.score + "점";
+  resultScore.textContent = stateManager.snapshot.result!.score + "점";
 
   const details = document.createElement("div");
   details.className = "result-details";
 
   const accuracyValue =
-    state.result!.hits + state.result!.misses === 0
+    stateManager.snapshot.result!.hits + stateManager.snapshot.result!.misses === 0
       ? 100
-      : Math.round((state.result!.hits / (state.result!.hits + state.result!.misses)) * 100);
+      : Math.round(
+          (stateManager.snapshot.result!.hits /
+            (stateManager.snapshot.result!.hits + stateManager.snapshot.result!.misses)) *
+            100,
+        );
 
-  details.appendChild(createResultRow("정확히 친 단어", state.result!.hits + " 개"));
-  details.appendChild(createResultRow("놓친 단어", state.result!.misses + " 개"));
+  details.appendChild(createResultRow("정확히 친 단어", stateManager.snapshot.result!.hits + " 개"));
+  details.appendChild(createResultRow("놓친 단어", stateManager.snapshot.result!.misses + " 개"));
   details.appendChild(createResultRow("정확도", accuracyValue + "%"));
 
   const retryButton = document.createElement("button");
@@ -57,12 +61,12 @@ export function renderResultScreen(container: HTMLElement): void {
   container.appendChild(card);
 
   retryButton.addEventListener("click", () => {
-    resetGameState(false);
+    stateManager.resetGameState({ resetName: false });
     startCountdown();
   });
 
   renameButton.addEventListener("click", () => {
-    resetGameState(true);
-    setView("name");
+    stateManager.resetGameState({ resetName: true });
+    stateManager.setView("name");
   });
 }

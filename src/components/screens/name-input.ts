@@ -1,5 +1,6 @@
 import { startCountdown } from "../../core/game";
-import { setPlayerName } from "../../core/state";
+import { stateManager } from "../../core/state";
+
 import { createCard, createButton, createInput } from "../ui";
 
 export function renderNameScreen(container: HTMLElement): void {
@@ -46,7 +47,7 @@ export function renderNameScreen(container: HTMLElement): void {
       return;
     }
 
-    setPlayerName(value);
+    stateManager.setPlayerName(value);
     startCountdown();
   });
 

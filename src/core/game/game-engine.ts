@@ -1,18 +1,19 @@
-import { setView, state } from "../state";
+import { stateManager } from "../state";
 import { WordState } from "../../types";
 import { WORD_BANK, WORD_SPEED_RANGE } from "../constants";
 import { clearAllTimers } from "./timer";
 import { updateAccuracy } from "../../utils";
 
 export function spawnWord() {
-  if (!state.game || !state.game.running) {
+  const game = stateManager.snapshot.game;
+  if (!game || !game.running) {
     return;
   }
 
   const text = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
   const wordElement = createWordElement(text);
 
-  const areaWidth = state.game.area.clientWidth;
+  const areaWidth = game.area.clientWidth;
   const wordWidth = wordElement.offsetWidth || 80;
   const maxX = Math.max(0, areaWidth - wordWidth - 16);
   const x = Math.floor(Math.random() * (maxX + 1)) + 8;
@@ -21,14 +22,13 @@ export function spawnWord() {
   const wordState: WordState = {
     id: generateWordId(),
     text,
-    x: calculateRandomX(wordElement),
+    x,
     y: -40,
     speed: getRandomSpeed(),
     element: wordElement,
     missed: false,
   };
-
-  state.game.words.push(wordState);
+  stateManager.updateGame(g => g.words.push(wordState));
 }
 
 export function createWordElement(text: string) {
@@ -36,8 +36,8 @@ export function createWordElement(text: string) {
   wordElement.className = "word";
   wordElement.textContent = text;
   wordElement.style.top = "-40px";
-  if (state.game) {
-    state.game.area.appendChild(wordElement);
+  if (stateManager.snapshot.game) {
+    stateManager.snapshot.game.area.appendChild(wordElement);
   }
 
   return wordElement;
@@ -46,14 +46,6 @@ export function createWordElement(text: string) {
 function generateWordId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
-function calculateRandomX(element: HTMLDivElement): number {
-  if (!state.game) return 0;
-
-  const areaWidth = state.game.area.clientWidth;
-  const wordWidth = element.offsetWidth || 80;
-  const maxX = Math.max(0, areaWidth - wordWidth - 16);
-  return Math.floor(Math.random() * (maxX + 1)) + 8;
-}
 
 function getRandomSpeed(): number {
   const [min, max] = WORD_SPEED_RANGE;
@@ -61,16 +53,15 @@ function getRandomSpeed(): number {
 }
 
 export function submitTypedWord() {
-  if (!state.game || !state.game.running) {
-    return;
-  }
+  const game = stateManager.snapshot.game;
+  if (!game || !game.running) return;
 
-  const value = state.game.input.value.trim();
+  const value = game.input.value.trim();
   if (!value) {
     return;
   }
 
-  const matchIndex = state.game.words.findIndex(word => word.text === value);
+  const matchIndex = game.words.findIndex(word => word.text === value);
 
   if (matchIndex >= 0) {
     handleCorrectWord(matchIndex);
@@ -78,43 +69,53 @@ export function submitTypedWord() {
     handleIncorrectWord();
   }
 
-  state.game.input.value = "";
-  state.game.input.focus();
+  game.input.value = "";
+  game.input.focus();
 }
+
 function handleCorrectWord(matchIndex: number): void {
-  if (!state.game) return;
+  const game = stateManager.snapshot.game;
+  if (!game) return;
 
-  const matched = state.game.words.splice(matchIndex, 1)[0];
-  matched.element.classList.add("hit");
-  setTimeout(() => matched.element.remove(), 180);
-
-  state.game.score += 10;
-  state.game.hits += 1;
+  let matched: WordState | undefined;
+  stateManager.updateGame(g => {
+    matched = g.words.splice(matchIndex, 1)[0];
+    g.score += 10;
+    g.hits += 1;
+  });
+  if (matched) {
+    matched?.element.classList.add("hit");
+    setTimeout(() => matched!.element.remove(), 180);
+  }
 
   updateScore();
   updateAccuracy();
 }
 
 function handleIncorrectWord(): void {
-  if (!state.game) return;
+  if (!stateManager.snapshot.game) return;
 
-  state.game.misses += 1;
+  stateManager.updateGame(g => {
+    g.misses += 1;
+  });
+
   updateAccuracy();
 }
 
 function updateScore(): void {
-  if (!state.game) return;
-  state.game.scoreDisplay.textContent = state.game.score.toString();
+  if (!stateManager.snapshot.game) return;
+  stateManager.snapshot.game.scoreDisplay.textContent = stateManager.snapshot.game.score.toString();
 }
 // 단어들 위치 업데이트 (게임 루프에서 호출)
 export function updateWords(delta: number): void {
-  if (!state.game) return;
+  const game = stateManager.snapshot.game;
+  if (!game) return;
 
-  const areaHeight = state.game.area.clientHeight;
+  const areaHeight = game.area.clientHeight;
   const remaining: WordState[] = [];
   const reachedBottom = areaHeight - 34;
 
-  for (const word of state.game.words) {
+  for (const word of game.words) {
     // 속도 계산 수정 (1000으로 나누기)
     word.y += (word.speed * delta) / 1000;
 
@@ -127,49 +128,47 @@ export function updateWords(delta: number): void {
     remaining.push(word);
   }
 
-  state.game.words = remaining;
+  stateManager.updateGame(g => {
+    g.words = remaining;
+  });
 }
 
 // 놓친 단어 처리
 export function markMiss(word: WordState): void {
-  if (!state.game || !word || word.missed) return;
+  if (!stateManager.snapshot.game || !word || word.missed) return;
 
   word.missed = true;
   word.element.classList.add("miss");
 
   setTimeout(() => {
-    if (word.element && word.element.parentNode) {
-      word.element.parentNode.removeChild(word.element);
-    }
+    word.element.parentNode?.removeChild(word.element);
   }, 240);
 
-  state.game.misses += 1;
+  stateManager.updateGame(g => {
+    g.misses += 1;
+  });
   updateAccuracy(); // 이미 game-logic.ts에 있음
 }
 
 // 게임 종료 처리
 export function finishGame(): void {
-  if (!state.game || !state.game.running) return;
+  const game = stateManager.snapshot.game;
+  if (!game || !game.running) return;
 
-  state.game.running = false;
+  stateManager.updateGame(g => {
+    g.running = false;
+  });
 
   // 모든 타이머 정리
   clearAllTimers();
 
   // 결과 저장
-  const summary = {
-    score: state.game.score,
-    hits: state.game.hits,
-    misses: state.game.misses,
-  };
-
+  const { score, hits, misses, words } = stateManager.snapshot.game!;
   // 남은 단어들 정리
-  state.game.words.forEach(word => {
-    if (word.element && word.element.parentNode) {
-      word.element.parentNode.removeChild(word.element);
-    }
+  words.forEach(word => {
+    word.element.parentNode?.removeChild(word.element);
   });
 
-  state.result = summary;
-  setView("result");
+  stateManager.setGameResult(score, hits, misses);
+  stateManager.setView("result");
 }

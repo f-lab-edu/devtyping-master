@@ -3,7 +3,7 @@ import { markMiss, submitTypedWord } from "../../core/game";
 import { startGameLoop, startSpawningWords } from "../../core/game";
 import { updateAccuracy } from "../../utils";
 
-import { state } from "../../core/state";
+import { stateManager } from "../../core/state";
 import { createStatBlock } from "../ui";
 
 export function renderGameScreen(container: HTMLElement): void {
@@ -16,7 +16,7 @@ export function renderGameScreen(container: HTMLElement): void {
   const header = document.createElement("div");
   header.className = "game-header";
 
-  const playerStat = createStatBlock("플레이어", state.playerName);
+  const playerStat = createStatBlock("플레이어", stateManager.snapshot.playerName);
   const timerStat = createStatBlock("남은 시간", "60.0s");
   timerStat.querySelector(".stat-value")!.id = "timer-display";
   const scoreStat = createStatBlock("점수", "0");
@@ -58,7 +58,7 @@ export function renderGameScreen(container: HTMLElement): void {
 
   container.appendChild(card);
 
-  state.game = {
+  stateManager.setGame({
     startedAt: performance.now(),
     endsAt: performance.now() + GAME_DURATION_MS,
     score: 0,
@@ -71,7 +71,7 @@ export function renderGameScreen(container: HTMLElement): void {
     scoreDisplay: document.getElementById("score-display")!,
     accuracyDisplay: document.getElementById("accuracy-display")!,
     running: true,
-  };
+  });
 
   typingInput.addEventListener("keydown", event => {
     if (event.key === "Enter") {
@@ -81,22 +81,22 @@ export function renderGameScreen(container: HTMLElement): void {
   });
 
   skipButton.addEventListener("click", () => {
-    if (!state.game) {
+    if (!stateManager.snapshot.game) {
       return;
     }
 
-    if (state.game.words.length === 0) {
-      state.game.misses += 1;
+    if (stateManager.snapshot.game.words.length === 0) {
+      stateManager.snapshot.game.misses += 1;
       updateAccuracy();
-      state.game.input.value = "";
-      state.game.input.focus();
+      stateManager.snapshot.game.input.value = "";
+      stateManager.snapshot.game.input.focus();
       return;
     }
 
-    const skipped = state.game.words.shift();
+    const skipped = stateManager.snapshot.game.words.shift();
     skipped && markMiss(skipped);
-    state.game.input.value = "";
-    state.game.input.focus();
+    stateManager.snapshot.game.input.value = "";
+    stateManager.snapshot.game.input.focus();
   });
 
   typingInput.focus();
