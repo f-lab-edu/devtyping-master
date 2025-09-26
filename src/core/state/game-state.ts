@@ -2,7 +2,7 @@ import type { AppState, GameState } from "../../types";
 import { COUNTDOWN_START } from "../constants";
 
 export class StateManager {
-  private state: AppState;
+  readonly state: AppState;
 
   // 구독자 목록
   private listeners: Array<() => void> = [];
