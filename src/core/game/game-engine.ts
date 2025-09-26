@@ -6,14 +6,14 @@ import { updateAccuracy } from "../../utils";
 export function spawnWord() {
   const game = stateManager.snapshot.game;
   if (!game?.running) return;
-  // eslint-disable-next-line no-restricted-syntax
+  // NOSONAR - Using Math.random() is safe for game word selection
   const text = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
   const wordElement = createWordElement(text);
 
   const areaWidth = game.area.clientWidth;
   const wordWidth = wordElement.offsetWidth || 80;
   const maxX = Math.max(0, areaWidth - wordWidth - 16);
-  // eslint-disable-next-line no-restricted-syntax
+  // NOSONAR - Using Math.random() is safe for game word selection
   const x = Math.floor(Math.random() * (maxX + 1)) + 8;
   wordElement.style.left = x + "px";
 
@@ -42,13 +42,13 @@ export function createWordElement(text: string) {
 }
 
 function generateWordId(): string {
-  // eslint-disable-next-line no-restricted-syntax
+  // NOSONAR - Using Math.random() is safe for game word selection
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
 function getRandomSpeed(): number {
   const [min, max] = WORD_SPEED_RANGE;
-  // eslint-disable-next-line no-restricted-syntax
+  // NOSONAR - Using Math.random() is safe for game word selection
   return Math.random() * (max - min) + min;
 }
 
