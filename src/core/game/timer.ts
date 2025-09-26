@@ -50,7 +50,7 @@ export function startGameLoop(): void {
   let lastFrame = performance.now();
 
   const loop = (now: number) => {
-    if (!stateManager.snapshot.game || !stateManager.snapshot.game.running) {
+    if (!stateManager.snapshot.game?.running) {
       return;
     }
 
@@ -102,7 +102,7 @@ export function clearAllTimers(): void {
 // 게임 종료 처리
 export function finishGame(): void {
   const game = stateManager.snapshot.game;
-  if (!game || !game.running) return;
+  if (!game?.running) return;
 
   stateManager.updateGame(g => {
     g.running = false;

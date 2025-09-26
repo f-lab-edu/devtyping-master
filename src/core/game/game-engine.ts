@@ -5,9 +5,7 @@ import { updateAccuracy } from "../../utils";
 
 export function spawnWord() {
   const game = stateManager.snapshot.game;
-  if (!game || !game.running) {
-    return;
-  }
+  if (!game?.running) return;
 
   const text = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
   const wordElement = createWordElement(text);
@@ -53,7 +51,7 @@ function getRandomSpeed(): number {
 
 export function submitTypedWord() {
   const game = stateManager.snapshot.game;
-  if (!game || !game.running) return;
+  if (!game?.running) return;
 
   const value = game.input.value.trim();
   if (!value) {
