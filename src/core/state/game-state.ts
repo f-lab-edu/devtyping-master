@@ -1,68 +1,30 @@
 import type { AppState, GameState } from "../../types";
 import { COUNTDOWN_START } from "../constants";
-import { clearAllTimers } from "../game";
-
-// export const state: AppState = {
-//   view: "name",
-//   playerName: "",
-//   countdownValue: COUNTDOWN_START,
-//   game: null,
-//   result: null,
-// };
-
-// // 상태 업데이트 함수들
-// export function setPlayerName(name: string): void {
-//   state.playerName = name;
-// }
-
-// export function setView(view: AppState["view"]): void {
-//   state.view = view;
-// }
-
-// export function setGameResult(score: number, hits: number, misses: number): void {
-//   state.result = { score, hits, misses };
-// }
-
-// export function resetGame(): void {
-//   state.game = null;
-//   state.result = null;
-//   state.countdownValue = COUNTDOWN_START;
-// }
-
-// export function resetGameState(resetName: boolean = false): void {
-//   // 모든 타이머 정리
-//   clearAllTimers();
-
-//   // 남은 단어들 DOM에서 제거
-//   if (state.game && state.game.words) {
-//     state.game.words.forEach(word => {
-//       if (word.element && word.element.parentNode) {
-//         word.element.parentNode.removeChild(word.element);
-//       }
-//     });
-//   }
-
-//   // 상태 초기화
-//   state.game = null;
-//   state.result = null;
-//   state.countdownValue = COUNTDOWN_START;
-
-//   if (resetName) {
-//     state.playerName = "";
-//   }
-// }
 
 export class StateManager {
   private state: AppState;
 
+  // 구독자 목록
+  private listeners: Array<() => void> = [];
+
   constructor() {
     this.state = {
-      view: "name",
+      view: "name", //현재 화면상태
       playerName: "",
       countdownValue: COUNTDOWN_START,
       game: null,
       result: null,
     };
+  }
+
+  subscribe(fn: () => void) {
+    this.listeners.push(fn); //명단추가
+    return () => {
+      this.listeners = this.listeners.filter(f => f !== fn); //구독취소
+    };
+  }
+  private notify() {
+    for (const fn of this.listeners) fn();
   }
 
   // getter (읽기 전용 접근)
@@ -77,6 +39,7 @@ export class StateManager {
 
   setView(view: AppState["view"]): void {
     this.state.view = view;
+    this.notify();
   }
 
   setGameResult(score: number, hits: number, misses: number): void {
@@ -96,11 +59,13 @@ export class StateManager {
   // ✅ 카운트다운 전용 메서드들
   setCountdown(value: number): void {
     this.state.countdownValue = value;
+    this.notify();
   }
 
   /** 1 감소시키고, 감소 후 값을 반환 */
   tickCountdown(): number {
     this.state.countdownValue -= 1;
+    this.notify();
     return this.state.countdownValue;
   }
 

@@ -69,8 +69,11 @@ function serveFile(res, filePath) {
 
 const server = http.createServer((req, res) => {
   const requestUrl = new URL(req.url, 'http://' + req.headers.host);
-  const relativePath = decodeURIComponent(requestUrl.pathname);
-  const resolvedPath = path.resolve(rootDir, '.' + relativePath);
+  const rawPath = decodeURIComponent(requestUrl.pathname);
+  const normalizedPath = path.posix.normalize(rawPath);
+  const safePathSegment = normalizedPath.replace(/^\/+/, '');
+  const safePath = '/' + safePathSegment;
+  const resolvedPath = path.resolve(rootDir, '.' + safePath);
 
   if (!resolvedPath.startsWith(rootDir)) {
     res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -79,8 +82,10 @@ const server = http.createServer((req, res) => {
   }
 
   fs.stat(resolvedPath, (statErr, stats) => {
-    if (!statErr && stats.isDirectory() && !relativePath.endsWith('/')) {
-      res.writeHead(301, { Location: relativePath + '/' });
+    if (!statErr && stats.isDirectory() && !safePath.endsWith('/')) {
+      const redirectPath = encodeURI(safePath.endsWith('/') ? safePath : safePath + '/');
+      const location = requestUrl.search ? redirectPath + requestUrl.search : redirectPath;
+      res.writeHead(301, { Location: location });
       res.end();
       return;
     }
