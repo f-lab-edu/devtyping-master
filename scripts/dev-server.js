@@ -5,7 +5,7 @@ const { URL } = require('url');
 
 const host = '127.0.0.1';
 const port = Number(process.env.PORT) || 5173;
-const rootDir = path.resolve(__dirname, '..', 'src');
+const rootDir = path.resolve(__dirname, '..', 'dist');
 
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8',
@@ -28,12 +28,28 @@ function sendNotFound(res) {
 function serveFile(res, filePath) {
   fs.stat(filePath, (statErr, stats) => {
     if (statErr) {
+      if (!path.extname(filePath)) {
+        const jsFallbackPath = filePath + '.js';
+        if (fs.existsSync(jsFallbackPath)) {
+          return serveFile(res, jsFallbackPath);
+        }
+      }
+
       return sendNotFound(res);
     }
 
     if (stats.isDirectory()) {
-      const indexPath = path.join(filePath, 'index.html');
-      return serveFile(res, indexPath);
+      const indexHtmlPath = path.join(filePath, 'index.html');
+      if (fs.existsSync(indexHtmlPath)) {
+        return serveFile(res, indexHtmlPath);
+      }
+
+      const indexJsPath = path.join(filePath, 'index.js');
+      if (fs.existsSync(indexJsPath)) {
+        return serveFile(res, indexJsPath);
+      }
+
+      return sendNotFound(res);
     }
 
     const ext = path.extname(filePath).toLowerCase();
@@ -53,8 +69,11 @@ function serveFile(res, filePath) {
 
 const server = http.createServer((req, res) => {
   const requestUrl = new URL(req.url, 'http://' + req.headers.host);
-  const relativePath = decodeURIComponent(requestUrl.pathname);
-  const resolvedPath = path.resolve(rootDir, '.' + relativePath);
+  const rawPath = decodeURIComponent(requestUrl.pathname);
+  const normalizedPath = path.posix.normalize(rawPath);
+  const safePathSegment = normalizedPath.replace(/^\/+/, '');
+  const safePath = '/' + safePathSegment;
+  const resolvedPath = path.resolve(rootDir, '.' + safePath);
 
   if (!resolvedPath.startsWith(rootDir)) {
     res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -62,7 +81,17 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  serveFile(res, resolvedPath);
+  fs.stat(resolvedPath, (statErr, stats) => {
+    if (!statErr && stats.isDirectory() && !safePath.endsWith('/')) {
+      const redirectPath = encodeURI(safePath.endsWith('/') ? safePath : safePath + '/');
+      const location = requestUrl.search ? redirectPath + requestUrl.search : redirectPath;
+      res.writeHead(301, { Location: location });
+      res.end();
+      return;
+    }
+
+    serveFile(res, resolvedPath);
+  });
 });
 
 server.listen(port, host, () => {

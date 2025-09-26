@@ -4,8 +4,15 @@
   "description": "Week 1 vanilla JS typing game MVP",
   "private": true,
   "scripts": {
-    "dev": "node scripts/dev-server.js",
+    "dev": "node scripts/dev.js",
     "build": "node scripts/build.js",
+    "build:watch": "node scripts/build.js --watch",
     "test": "echo \"No automated tests yet\""
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.28.3",
+    "@babel/core": "^7.28.4",
+    "@babel/preset-env": "^7.28.3",
+    "@babel/preset-typescript": "^7.27.1"
   }
 }
