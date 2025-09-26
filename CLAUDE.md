@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Architecture
 
-This is a TypeScript typing game that has been refactored from a single-file architecture to a modular structure:
+This is a vanilla JavaScript typing game with a simple, single-file architecture:
 
 ### Core Game Flow
 The application follows a state-driven view system with four main screens:
@@ -40,48 +40,14 @@ The game uses three main timers/loops:
 
 ### File Structure
 - `src/index.html`: Main HTML structure
-- `src/app.ts`: Application entry point and initialization
+- `src/main.js`: All game logic (single file, ~594 lines)
 - `src/styles.css`: Game styling
-- `src/core/`: Core business logic
-  - `constants/`: Game constants and configuration
-    - `game-config.ts`: Game settings and constants
-    - `index.ts`: Module exports
-  - `state/`: Global state management
-    - `game-state.ts`: Application state and state mutations
-    - `index.ts`: Module exports
-  - `game/`: Game engine and logic
-    - `game-engine.ts`: Core game mechanics
-    - `timer.ts`: Timer and countdown functionality
-    - `index.ts`: Module exports
-- `src/components/`: UI components
-  - `ui/`: Reusable UI components
-    - `ui-elements.ts`: Generic UI component builders
-    - `index.ts`: Module exports
-  - `screens/`: Screen rendering components
-    - `name-input.ts`: Name input screen
-    - `countdown.ts`: Countdown screen
-    - `game.ts`: Game screen
-    - `result.ts`: Results screen
-    - `index.ts`: Module exports
-- `src/utils/`: Utility functions
-  - `game-utils.ts`: Game-related utility functions
-  - `index.ts`: Module exports
-- `src/types/`: TypeScript type definitions
-  - `game.types.ts`: Game-specific type definitions
-  - `index.ts`: Module exports
 - `scripts/dev-server.js`: Simple HTTP server for development
 - `scripts/build.js`: Basic file copying for deployment
 
 ### Development Notes
-- **TypeScript**: Full type safety and modern development experience
-- **Modular Architecture**: Clear separation of concerns with domain-driven structure:
-  - `core/`: Business logic isolated from UI
-  - `components/`: Reusable UI components and screens
-  - `utils/`: Shared utility functions
-  - `types/`: Centralized type definitions
-- **Module System**: Each folder has `index.ts` for clean imports
-- **No Build Process**: TypeScript files served directly by browser
-- **No External Dependencies**: Only Node.js for development server
-- **Performance Optimized**: `requestAnimationFrame` for smooth animations
-- **Direct DOM Manipulation**: Using `document.createElement()` for lightweight UI
-- **Korean Language**: UI text in Korean for target audience
+- No build process or bundling - pure vanilla JS/HTML/CSS
+- No external dependencies beyond Node.js for dev server
+- Direct DOM manipulation with `document.createElement()`
+- Performance-optimized with `requestAnimationFrame` for smooth animations
+- Korean language UI text
