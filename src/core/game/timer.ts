@@ -1,10 +1,9 @@
-import { COUNTDOWN_START } from "../constants";
-import { renderCountdownScreen } from "../../components/screens";
+﻿import { COUNTDOWN_START } from "../constants";
 import { stateManager } from "../state";
-import { finishGame, updateWords } from "./game-engine";
+import { finishGame, spawnWord, updateWords } from "./game-engine";
 import { updateTimer } from "../../utils";
 
-// 타이머 ID들을 관리하는 객체
+// 활성화된 타이머 ID를 추적
 interface TimerManager {
   countdownId: ReturnType<typeof setInterval> | null;
   spawnId: ReturnType<typeof setInterval> | null;
@@ -16,7 +15,7 @@ const timers: TimerManager = {
   spawnId: null,
   animationId: null,
 };
-// 앱 컨테이너를 저장할 변수
+// 화면을 다시 그릴 때 사용할 앱 컨테이너
 let appContainer: HTMLElement | null = null;
 
 export function setAppContainer(container: HTMLElement): void {
@@ -33,24 +32,18 @@ export function startCountdown(): void {
   timers.countdownId = setInterval(() => {
     const current = stateManager.tickCountdown();
 
-    if (current >= 0) {
-      if (appContainer) {
-        renderCountdownScreen(appContainer); // ✅ 타입스크립트가 여기서는 HTMLElement임을 인식
-      }
-    }
-
     if (current < 0) {
       clearCountdownTimer();
       stateManager.setView("game");
+      startSpawningWords();
+      startGameLoop();
     }
   }, 1000);
 }
 
 export function startSpawningWords(): void {
-  const { spawnWord } = require("./game-engine"); // 순환 참조 방지
-
   spawnWord();
-  timers.spawnId = setInterval(spawnWord, 2000); // WORD_SPAWN_INTERVAL_MS
+  timers.spawnId = setInterval(spawnWord, 2000);
 }
 
 export function startGameLoop(): void {
@@ -77,7 +70,7 @@ export function startGameLoop(): void {
 
   timers.animationId = requestAnimationFrame(loop);
 }
-// 타이머들 개별 정리 함수들
+// 타이머별 정리 함수
 export function clearCountdownTimer(): void {
   if (timers.countdownId) {
     clearInterval(timers.countdownId);
