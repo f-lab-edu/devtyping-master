@@ -1,6 +1,6 @@
 ﻿import { COUNTDOWN_START } from "../constants";
 import { stateManager } from "../state";
-import { finishGame, spawnWord, updateWords } from "./game-engine";
+import { spawnWord, updateWords } from "./game-engine";
 import { updateTimer } from "../../utils";
 
 // 활성화된 타이머 ID를 추적
@@ -70,6 +70,7 @@ export function startGameLoop(): void {
 
   timers.animationId = requestAnimationFrame(loop);
 }
+
 // 타이머별 정리 함수
 export function clearCountdownTimer(): void {
   if (timers.countdownId) {
@@ -96,4 +97,27 @@ export function clearAllTimers(): void {
   clearCountdownTimer();
   clearSpawnTimer();
   clearAnimationTimer();
+}
+
+// 게임 종료 처리
+export function finishGame(): void {
+  const game = stateManager.snapshot.game;
+  if (!game || !game.running) return;
+
+  stateManager.updateGame(g => {
+    g.running = false;
+  });
+
+  // 모든 타이머 정리
+  clearAllTimers();
+
+  // 결과 저장
+  const { score, hits, misses, words } = stateManager.snapshot.game!;
+  // 남은 단어들 정리
+  words.forEach(word => {
+    word.element.parentNode?.removeChild(word.element);
+  });
+
+  stateManager.setGameResult(score, hits, misses);
+  stateManager.setView("result");
 }

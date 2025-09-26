@@ -1,7 +1,6 @@
 import { stateManager } from "../state";
 import { WordState } from "../../types";
 import { WORD_BANK, WORD_SPEED_RANGE } from "../constants";
-import { clearAllTimers } from "./timer";
 import { updateAccuracy } from "../../utils";
 
 export function spawnWord() {
@@ -148,27 +147,4 @@ export function markMiss(word: WordState): void {
     g.misses += 1;
   });
   updateAccuracy(); // 이미 game-logic.ts에 있음
-}
-
-// 게임 종료 처리
-export function finishGame(): void {
-  const game = stateManager.snapshot.game;
-  if (!game || !game.running) return;
-
-  stateManager.updateGame(g => {
-    g.running = false;
-  });
-
-  // 모든 타이머 정리
-  clearAllTimers();
-
-  // 결과 저장
-  const { score, hits, misses, words } = stateManager.snapshot.game!;
-  // 남은 단어들 정리
-  words.forEach(word => {
-    word.element.parentNode?.removeChild(word.element);
-  });
-
-  stateManager.setGameResult(score, hits, misses);
-  stateManager.setView("result");
 }
