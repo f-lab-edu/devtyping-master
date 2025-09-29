@@ -1,7 +1,7 @@
 import { stateManager } from "../state";
 import { WordState } from "../../types";
 import { WORD_BANK, WORD_SPEED_RANGE } from "../constants";
-import { updateAccuracy } from "../../utils";
+import { updateAccuracy, updateScore } from "../../utils";
 
 export function spawnWord() {
   const game = stateManager.snapshot.game;
@@ -101,10 +101,6 @@ function handleIncorrectWord(): void {
   updateAccuracy();
 }
 
-function updateScore(): void {
-  if (!stateManager.snapshot.game) return;
-  stateManager.snapshot.game.scoreDisplay.textContent = stateManager.snapshot.game.score.toString();
-}
 // 단어들 위치 업데이트 (게임 루프에서 호출)
 export function updateWords(delta: number): void {
   const game = stateManager.snapshot.game;
