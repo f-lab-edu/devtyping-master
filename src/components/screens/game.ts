@@ -81,22 +81,28 @@ export function renderGameScreen(container: HTMLElement): void {
   });
 
   skipButton.addEventListener("click", () => {
-    if (!stateManager.snapshot.game) {
-      return;
+    const g = stateManager.snapshot.game;
+    if (!g || g.words.length === 0) return;
+
+    // 바닥에 가장 가까운 단어의 인덱스 찾기
+    let bottomIdx = 0;
+    let maxY = g.words[0].y;
+    for (let i = 1; i < g.words.length; i++) {
+      if (g.words[i].y > maxY) {
+        maxY = g.words[i].y;
+        bottomIdx = i;
+      }
     }
 
-    if (stateManager.snapshot.game.words.length === 0) {
-      stateManager.snapshot.game.misses += 1;
-      updateAccuracy();
-      stateManager.snapshot.game.input.value = "";
-      stateManager.snapshot.game.input.focus();
-      return;
-    }
+    stateManager.updateGame(game => {
+      const skipped = game.words[bottomIdx];
+      if (!skipped) return;
+      game.words.splice(bottomIdx, 1);
+      markMiss(skipped);
+    });
 
-    const skipped = stateManager.snapshot.game.words.shift();
-    skipped && markMiss(skipped);
-    stateManager.snapshot.game.input.value = "";
-    stateManager.snapshot.game.input.focus();
+    g.input.value = "";
+    g.input.focus();
   });
 
   typingInput.focus();
