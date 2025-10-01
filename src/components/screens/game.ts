@@ -1,8 +1,6 @@
 import { GAME_DURATION_MS } from "../../core/constants";
 import { markMiss, submitTypedWord } from "../../core/game";
 import { startGameLoop, startSpawningWords } from "../../core/game";
-import { updateAccuracy } from "../../utils";
-
 import { stateManager } from "../../core/state";
 import { createStatBlock } from "../ui";
 
