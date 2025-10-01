@@ -35,8 +35,8 @@ export function startCountdown(): void {
     if (current < 0) {
       clearCountdownTimer();
       stateManager.setView("game");
-      startSpawningWords();
-      startGameLoop();
+      // startSpawningWords();
+      // startGameLoop();
     }
   }, 1000);
 }
