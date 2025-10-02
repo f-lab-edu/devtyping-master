@@ -69,12 +69,6 @@ export class StateManager {
     return this.state.countdownValue;
   }
 
-  resetGame(): void {
-    this.state.game = null;
-    this.state.result = null;
-    this.state.countdownValue = COUNTDOWN_START;
-  }
-
   resetGameState(options?: {
     resetName?: boolean;
     onBeforeClear?: () => void;
