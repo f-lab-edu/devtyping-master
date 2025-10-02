@@ -83,11 +83,15 @@ export function renderGameScreen(container: HTMLElement): void {
     if (!g || g.words.length === 0) return;
 
     // 바닥에 가장 가까운 단어의 인덱스 찾기
+    const firstWord = g.words[0];
+    if (!firstWord) return;
+
     let bottomIdx = 0;
-    let maxY = g.words[0].y;
+    let maxY = firstWord.y;
     for (let i = 1; i < g.words.length; i++) {
-      if (g.words[i].y > maxY) {
-        maxY = g.words[i].y;
+      const word = g.words[i];
+      if (word && word.y > maxY) {
+        maxY = word.y;
         bottomIdx = i;
       }
     }

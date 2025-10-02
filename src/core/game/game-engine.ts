@@ -1,5 +1,5 @@
 import { stateManager } from "../state";
-import { WordState } from "../../types";
+import type { WordState } from "../../types";
 import { WORD_BANK, WORD_SPEED_RANGE } from "../constants";
 import { updateAccuracy, updateScore } from "../../utils";
 
@@ -7,7 +7,10 @@ export function spawnWord() {
   const game = stateManager.snapshot.game;
   if (!game?.running) return;
 
-  const text = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
+  const randomText = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
+  if (!randomText) return;
+
+  const text = randomText;
   const wordElement = createWordElement(text);
 
   const areaWidth = game.area.clientWidth;

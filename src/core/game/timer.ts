@@ -15,12 +15,7 @@ const timers: TimerManager = {
   spawnId: null,
   animationId: null,
 };
-// 화면을 다시 그릴 때 사용할 앱 컨테이너
-let appContainer: HTMLElement | null = null;
 
-export function setAppContainer(container: HTMLElement): void {
-  appContainer = container;
-}
 // 카운트다운 시작
 export function startCountdown(): void {
   clearCountdownTimer();
