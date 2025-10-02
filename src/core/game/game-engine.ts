@@ -1,19 +1,22 @@
 import { stateManager } from "../state";
-import { WordState } from "../../types";
+import type { WordState } from "../../types";
 import { WORD_BANK, WORD_SPEED_RANGE } from "../constants";
-import { updateAccuracy } from "../../utils";
+import { updateAccuracy, updateScore } from "../../utils";
 
 export function spawnWord() {
   const game = stateManager.snapshot.game;
   if (!game?.running) return;
-  // NOSONAR - Using Math.random() is safe for game word selection
-  const text = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
+
+  const randomText = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
+  if (!randomText) return;
+
+  const text = randomText;
   const wordElement = createWordElement(text);
 
   const areaWidth = game.area.clientWidth;
   const wordWidth = wordElement.offsetWidth || 80;
   const maxX = Math.max(0, areaWidth - wordWidth - 16);
-  // NOSONAR - Using Math.random() is safe for game word selection
+
   const x = Math.floor(Math.random() * (maxX + 1)) + 8;
   wordElement.style.left = x + "px";
 
@@ -42,13 +45,12 @@ export function createWordElement(text: string) {
 }
 
 function generateWordId(): string {
-  // NOSONAR - Using Math.random() is safe for game word selection
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
 function getRandomSpeed(): number {
   const [min, max] = WORD_SPEED_RANGE;
-  // NOSONAR - Using Math.random() is safe for game word selection
+
   return Math.random() * (max - min) + min;
 }
 
@@ -102,10 +104,6 @@ function handleIncorrectWord(): void {
   updateAccuracy();
 }
 
-function updateScore(): void {
-  if (!stateManager.snapshot.game) return;
-  stateManager.snapshot.game.scoreDisplay.textContent = stateManager.snapshot.game.score.toString();
-}
 // 단어들 위치 업데이트 (게임 루프에서 호출)
 export function updateWords(delta: number): void {
   const game = stateManager.snapshot.game;

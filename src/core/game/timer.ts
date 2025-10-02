@@ -15,12 +15,6 @@ const timers: TimerManager = {
   spawnId: null,
   animationId: null,
 };
-// 화면을 다시 그릴 때 사용할 앱 컨테이너
-let appContainer: HTMLElement | null = null;
-
-export function setAppContainer(container: HTMLElement): void {
-  appContainer = container;
-}
 
 // 카운트다운 시작
 export function startCountdown(): void {
@@ -35,13 +29,13 @@ export function startCountdown(): void {
     if (current < 0) {
       clearCountdownTimer();
       stateManager.setView("game");
-      startSpawningWords();
-      startGameLoop();
     }
   }, 1000);
 }
 
+//단어 생성기 시작
 export function startSpawningWords(): void {
+  clearSpawnTimer(); //중복방지
   spawnWord();
   timers.spawnId = setInterval(spawnWord, 2000);
 }
@@ -58,6 +52,7 @@ export function startGameLoop(): void {
     lastFrame = now;
 
     updateWords(delta);
+    //시간제한 업데이트
     updateTimer(now);
 
     if (now >= stateManager.snapshot.game.endsAt) {

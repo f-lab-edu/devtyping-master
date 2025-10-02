@@ -1,8 +1,6 @@
 import { GAME_DURATION_MS } from "../../core/constants";
 import { markMiss, submitTypedWord } from "../../core/game";
 import { startGameLoop, startSpawningWords } from "../../core/game";
-import { updateAccuracy } from "../../utils";
-
 import { stateManager } from "../../core/state";
 import { createStatBlock } from "../ui";
 
@@ -81,22 +79,32 @@ export function renderGameScreen(container: HTMLElement): void {
   });
 
   skipButton.addEventListener("click", () => {
-    if (!stateManager.snapshot.game) {
-      return;
+    const g = stateManager.snapshot.game;
+    if (!g || g.words.length === 0) return;
+
+    // 바닥에 가장 가까운 단어의 인덱스 찾기
+    const firstWord = g.words[0];
+    if (!firstWord) return;
+
+    let bottomIdx = 0;
+    let maxY = firstWord.y;
+    for (let i = 1; i < g.words.length; i++) {
+      const word = g.words[i];
+      if (word && word.y > maxY) {
+        maxY = word.y;
+        bottomIdx = i;
+      }
     }
 
-    if (stateManager.snapshot.game.words.length === 0) {
-      stateManager.snapshot.game.misses += 1;
-      updateAccuracy();
-      stateManager.snapshot.game.input.value = "";
-      stateManager.snapshot.game.input.focus();
-      return;
-    }
+    stateManager.updateGame(game => {
+      const skipped = game.words[bottomIdx];
+      if (!skipped) return;
+      game.words.splice(bottomIdx, 1);
+      markMiss(skipped);
+    });
 
-    const skipped = stateManager.snapshot.game.words.shift();
-    skipped && markMiss(skipped);
-    stateManager.snapshot.game.input.value = "";
-    stateManager.snapshot.game.input.focus();
+    g.input.value = "";
+    g.input.focus();
   });
 
   typingInput.focus();
