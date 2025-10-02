@@ -92,6 +92,7 @@ function handleCorrectWord(matchIndex: number): void {
 
   updateScore();
   updateAccuracy();
+  updateSkipButton();
 }
 
 function handleIncorrectWord(): void {
@@ -129,6 +130,20 @@ export function updateWords(delta: number): void {
   stateManager.updateGame(g => {
     g.words = remaining;
   });
+
+  // Skip 버튼 활성화/비활성화
+  updateSkipButton();
+}
+
+// Skip 버튼 상태 업데이트
+export function updateSkipButton(): void {
+  const game = stateManager.snapshot.game;
+  if (!game) return;
+
+  const skipButton = document.getElementById("skip-button") as HTMLButtonElement | null;
+  if (!skipButton) return;
+
+  skipButton.disabled = game.words.length === 0;
 }
 
 // 놓친 단어 처리
