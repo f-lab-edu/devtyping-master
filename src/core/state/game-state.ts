@@ -2,9 +2,7 @@ import type { AppState, GameState } from "../../types";
 import { COUNTDOWN_START } from "../constants";
 
 export class StateManager {
-  readonly state: AppState;
-
-  // 구독자 목록
+  private state: AppState;
   private listeners: Array<() => void> = [];
 
   constructor() {
@@ -18,11 +16,13 @@ export class StateManager {
   }
 
   subscribe(fn: () => void) {
-    this.listeners.push(fn); //명단추가
+    this.listeners.push(fn);
+    // 클로저: fn을 기억하는 함수 반환
     return () => {
-      this.listeners = this.listeners.filter(f => f !== fn); //구독취소
+      this.listeners = this.listeners.filter(f => f !== fn);
     };
   }
+
   private notify() {
     for (const fn of this.listeners) fn();
   }

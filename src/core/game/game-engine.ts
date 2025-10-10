@@ -1,164 +1,178 @@
-import { stateManager } from "../state";
+import { StateManager, stateManager } from "../state";
 import type { WordState } from "../../types";
-import { WORD_BANK, WORD_SPEED_RANGE } from "../constants";
-import { updateAccuracy, updateScore } from "../../utils";
+import { SPEED_CONVERSION_FACTOR, WORD_BANK, WORD_BOTTOM_OFFSET, WORD_SPAWN_Y, WORD_SPEED_RANGE } from "../constants";
 
-export function spawnWord() {
-  const game = stateManager.snapshot.game;
-  if (!game?.running) return;
+export class GameEngine {
+  constructor(private stateManager: StateManager) {}
 
-  const randomText = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
-  if (!randomText) return;
+  public spawnWord(): void {
+    const game = this.stateManager.snapshot.game;
+    if (!game?.running) return;
 
-  const text = randomText;
-  const wordElement = createWordElement(text);
+    const randomText = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
+    if (!randomText) return;
 
-  const areaWidth = game.area.clientWidth;
-  const wordWidth = wordElement.offsetWidth || 80;
-  const maxX = Math.max(0, areaWidth - wordWidth - 16);
+    const text = randomText;
+    const wordElement = this.createWordElement(text);
 
-  const x = Math.floor(Math.random() * (maxX + 1)) + 8;
-  wordElement.style.left = x + "px";
+    const areaWidth = game.area.clientWidth;
+    const wordWidth = wordElement.offsetWidth || 80;
+    const maxX = Math.max(0, areaWidth - wordWidth - 16);
 
-  const wordState: WordState = {
-    id: generateWordId(),
-    text,
-    x,
-    y: -40,
-    speed: getRandomSpeed(),
-    element: wordElement,
-    missed: false,
-  };
-  stateManager.updateGame(g => g.words.push(wordState));
-}
+    const x = Math.floor(Math.random() * (maxX + 1)) + 8;
+    wordElement.style.left = x + "px";
 
-export function createWordElement(text: string) {
-  const wordElement = document.createElement("div");
-  wordElement.className = "word";
-  wordElement.textContent = text;
-  wordElement.style.top = "-40px";
-  if (stateManager.snapshot.game) {
-    stateManager.snapshot.game.area.appendChild(wordElement);
+    const wordState: WordState = {
+      id: this.generateWordId(),
+      text,
+      x,
+      y: -40,
+      speed: this.getRandomSpeed(),
+      element: wordElement,
+      missed: false,
+    };
+    this.stateManager.updateGame(g => g.words.push(wordState));
   }
+  public submitTypedWord(): void {
+    const game = this.stateManager.snapshot.game;
+    if (!game?.running) return;
 
-  return wordElement;
-}
-
-function generateWordId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-}
-
-function getRandomSpeed(): number {
-  const [min, max] = WORD_SPEED_RANGE;
-
-  return Math.random() * (max - min) + min;
-}
-
-export function submitTypedWord() {
-  const game = stateManager.snapshot.game;
-  if (!game?.running) return;
-
-  const value = game.input.value.trim();
-  if (!value) {
-    return;
-  }
-
-  const matchIndex = game.words.findIndex(word => word.text === value);
-
-  if (matchIndex >= 0) {
-    handleCorrectWord(matchIndex);
-  } else {
-    handleIncorrectWord();
-  }
-
-  game.input.value = "";
-  game.input.focus();
-}
-
-function handleCorrectWord(matchIndex: number): void {
-  const game = stateManager.snapshot.game;
-  if (!game) return;
-
-  let matched: WordState | undefined;
-  stateManager.updateGame(g => {
-    matched = g.words.splice(matchIndex, 1)[0];
-    g.score += 10;
-    g.hits += 1;
-  });
-  if (matched) {
-    matched?.element.classList.add("hit");
-    setTimeout(() => matched!.element.remove(), 180);
-  }
-
-  updateScore();
-  updateAccuracy();
-  updateSkipButton();
-}
-
-function handleIncorrectWord(): void {
-  if (!stateManager.snapshot.game) return;
-
-  stateManager.updateGame(g => {
-    g.misses += 1;
-  });
-
-  updateAccuracy();
-}
-
-// 단어들 위치 업데이트 (게임 루프에서 호출)
-export function updateWords(delta: number): void {
-  const game = stateManager.snapshot.game;
-  if (!game) return;
-
-  const areaHeight = game.area.clientHeight;
-  const remaining: WordState[] = [];
-  const reachedBottom = areaHeight - 34;
-
-  for (const word of game.words) {
-    // 속도 계산 수정 (1000으로 나누기)
-    word.y += (word.speed * delta) / 1000;
-
-    if (word.y >= reachedBottom) {
-      markMiss(word);
-      continue;
+    const value = game.input.value.trim();
+    if (!value) {
+      return;
     }
 
-    word.element.style.top = word.y + "px";
-    remaining.push(word);
+    const matchIndex = game.words.findIndex(word => word.text === value);
+
+    if (matchIndex >= 0) {
+      this.handleCorrectWord(matchIndex);
+    } else {
+      this.handleIncorrectWord();
+    }
+
+    game.input.value = "";
+    game.input.focus();
   }
 
-  stateManager.updateGame(g => {
-    g.words = remaining;
-  });
+  // 단어들 위치 업데이트 (게임 루프에서 호출)
+  public updateWords(delta: number): void {
+    const game = this.stateManager.snapshot.game;
+    if (!game) return;
 
-  // Skip 버튼 활성화/비활성화
-  updateSkipButton();
+    const areaHeight = game.area.clientHeight;
+    const remaining: WordState[] = [];
+    const reachedBottom = areaHeight - WORD_BOTTOM_OFFSET;
+
+    for (const word of game.words) {
+      // 속도 계산 수정 (1000으로 나누기)
+      word.y += (word.speed * delta) / SPEED_CONVERSION_FACTOR;
+
+      if (word.y >= reachedBottom) {
+        this.markMiss(word);
+        continue;
+      }
+
+      word.element.style.top = word.y + "px";
+      remaining.push(word);
+    }
+
+    this.stateManager.updateGame(g => {
+      g.words = remaining;
+    });
+
+    // Skip 버튼 활성화/비활성화
+    this.updateSkipButton();
+  }
+
+  // Skip 버튼 상태 업데이트
+  public updateSkipButton(): void {
+    const game = this.stateManager.snapshot.game;
+    if (!game) return;
+
+    const skipButton = document.getElementById("skip-button") as HTMLButtonElement | null;
+    if (!skipButton) return;
+
+    skipButton.disabled = game.words.length === 0;
+  }
+
+  // 놓친 단어 처리
+  public markMiss(word: WordState): void {
+    if (!this.stateManager.snapshot.game || !word || word.missed) return;
+
+    word.missed = true;
+    word.element.classList.add("miss");
+
+    setTimeout(() => {
+      word.element.parentNode?.removeChild(word.element);
+    }, 240);
+
+    this.stateManager.updateGame(g => {
+      g.misses += 1;
+    });
+    this.updateAccuracy(); // 이미 game-logic.ts에 있음
+  }
+
+  private createWordElement(text: string) {
+    const wordElement = document.createElement("div");
+    wordElement.className = "word";
+    wordElement.textContent = text;
+    wordElement.style.top = `${WORD_SPAWN_Y}px`;
+    if (this.stateManager.snapshot.game) {
+      this.stateManager.snapshot.game.area.appendChild(wordElement);
+    }
+
+    return wordElement;
+  }
+  private generateWordId(): string {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+  private getRandomSpeed(): number {
+    const [min, max] = WORD_SPEED_RANGE;
+
+    return Math.random() * (max - min) + min;
+  }
+  private handleCorrectWord(matchIndex: number): void {
+    const game = this.stateManager.snapshot.game;
+    if (!game) return;
+
+    let matched: WordState | undefined;
+    this.stateManager.updateGame(g => {
+      matched = g.words.splice(matchIndex, 1)[0];
+      g.score += 10;
+      g.hits += 1;
+    });
+    if (matched) {
+      matched.element.classList.add("hit");
+      setTimeout(() => matched!.element.remove(), 180);
+    }
+
+    this.updateScore();
+    this.updateAccuracy();
+    this.updateSkipButton();
+  }
+  private handleIncorrectWord(): void {
+    if (!this.stateManager.snapshot.game) return;
+
+    this.stateManager.updateGame(g => {
+      g.misses += 1;
+    });
+
+    this.updateAccuracy();
+  }
+
+  // 점수 표시 업데이트
+  private updateScore(): void {
+    if (!this.stateManager.snapshot.game) return;
+    this.stateManager.snapshot.game.scoreDisplay.textContent = this.stateManager.snapshot.game.score.toString();
+  }
+
+  // 정확도 표시 업데이트
+  private updateAccuracy(): void {
+    if (!this.stateManager.snapshot.game) return;
+
+    const total = this.stateManager.snapshot.game.hits + this.stateManager.snapshot.game.misses;
+    const value = total === 0 ? 100 : Math.round((this.stateManager.snapshot.game.hits / total) * 100);
+    this.stateManager.snapshot.game.accuracyDisplay.textContent = value + "%";
+  }
 }
-
-// Skip 버튼 상태 업데이트
-export function updateSkipButton(): void {
-  const game = stateManager.snapshot.game;
-  if (!game) return;
-
-  const skipButton = document.getElementById("skip-button") as HTMLButtonElement | null;
-  if (!skipButton) return;
-
-  skipButton.disabled = game.words.length === 0;
-}
-
-// 놓친 단어 처리
-export function markMiss(word: WordState): void {
-  if (!stateManager.snapshot.game || !word || word.missed) return;
-
-  word.missed = true;
-  word.element.classList.add("miss");
-
-  setTimeout(() => {
-    word.element.parentNode?.removeChild(word.element);
-  }, 240);
-
-  stateManager.updateGame(g => {
-    g.misses += 1;
-  });
-  updateAccuracy(); // 이미 game-logic.ts에 있음
-}
+export const gameEngine = new GameEngine(stateManager);

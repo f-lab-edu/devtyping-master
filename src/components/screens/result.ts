@@ -1,5 +1,5 @@
 import { CLEAR_SCORE } from "../../core/constants";
-import { startCountdown } from "../../core/game";
+import { gameTimer } from "../../core/game";
 import { stateManager } from "../../core/state";
 import { createResultRow } from "../ui";
 
@@ -62,7 +62,7 @@ export function renderResultScreen(container: HTMLElement): void {
 
   retryButton.addEventListener("click", () => {
     stateManager.resetGameState({ resetName: false });
-    startCountdown();
+    gameTimer.startCountdown();
   });
 
   renameButton.addEventListener("click", () => {

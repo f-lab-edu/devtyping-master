@@ -1,4 +1,4 @@
-import { startCountdown } from "../../core/game";
+import { gameTimer } from "../../core/game";
 import { stateManager } from "../../core/state";
 
 import { createCard, createButton, createInput } from "../ui";
@@ -48,7 +48,7 @@ export function renderNameScreen(container: HTMLElement): void {
     }
 
     stateManager.setPlayerName(value);
-    startCountdown();
+    gameTimer.startCountdown();
   });
 
   card.appendChild(header);

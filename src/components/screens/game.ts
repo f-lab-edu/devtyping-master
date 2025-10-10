@@ -1,6 +1,5 @@
 import { GAME_DURATION_MS } from "../../core/constants";
-import { markMiss, submitTypedWord } from "../../core/game";
-import { startGameLoop, startSpawningWords } from "../../core/game";
+import { gameEngine, gameTimer } from "../../core/game";
 import { stateManager } from "../../core/state";
 import { createStatBlock } from "../ui";
 
@@ -74,7 +73,7 @@ export function renderGameScreen(container: HTMLElement): void {
   typingInput.addEventListener("keydown", event => {
     if (event.key === "Enter") {
       event.preventDefault();
-      submitTypedWord();
+      gameEngine.submitTypedWord();
     }
   });
 
@@ -100,7 +99,7 @@ export function renderGameScreen(container: HTMLElement): void {
       const skipped = game.words[bottomIdx];
       if (!skipped) return;
       game.words.splice(bottomIdx, 1);
-      markMiss(skipped);
+      gameEngine.markMiss(skipped);
     });
 
     g.input.value = "";
@@ -108,6 +107,6 @@ export function renderGameScreen(container: HTMLElement): void {
   });
 
   typingInput.focus();
-  startSpawningWords();
-  startGameLoop();
+  gameTimer.startSpawningWords();
+  gameTimer.startGameLoop();
 }
