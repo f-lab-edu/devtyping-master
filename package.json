@@ -12,6 +12,7 @@
     "test": "echo \"No automated tests yet\""
   },
   "devDependencies": {
+    "sass": "^1.93.2",
     "terser": "^5.44.0",
     "typescript": "^5.9.3",
     "vite": "^7.1.7"
