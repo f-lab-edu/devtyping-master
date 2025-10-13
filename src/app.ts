@@ -3,14 +3,13 @@ import { stateManager } from "./core/state";
 
 const app = document.getElementById("app") as HTMLElement;
 
-// 상태 변경 알림을 받으면 중앙에서 한 번만 렌더
 let scheduled = false;
 stateManager.subscribe(() => {
   if (scheduled) return;
   scheduled = true;
   requestAnimationFrame(() => {
     scheduled = false;
-    render(); // ← 상태를 읽어 해당 화면 렌더
+    render();
   });
 });
 
@@ -32,7 +31,7 @@ function render(): void {
 }
 
 function startApp(): void {
-  stateManager.setView("name"); // ✅ notify → render() 자동 호출
+  stateManager.setView("name");
 }
 
 startApp();

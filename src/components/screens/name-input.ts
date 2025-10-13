@@ -46,14 +46,10 @@ export function renderNameScreen(container: HTMLElement): void {
       input.focus();
       return;
     }
-
+    button.disabled = true;
     stateManager.setPlayerName(value);
     gameTimer.startCountdown();
   });
-
-  card.appendChild(header);
-  card.appendChild(form);
-  container.appendChild(card);
 
   window.requestAnimationFrame(() => input.focus());
 }
