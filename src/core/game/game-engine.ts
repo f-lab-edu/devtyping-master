@@ -2,26 +2,33 @@ import { StateManager, stateManager } from "../state";
 import type { WordState } from "../../types";
 import { SPEED_CONVERSION_FACTOR, WORD_BANK, WORD_BOTTOM_OFFSET, WORD_SPAWN_Y, WORD_SPEED_RANGE } from "../constants";
 import { calculateAccuracy } from "../../utils";
+import { GameRenderer } from "./game-render";
 
 export class GameEngine {
+  private renderer: GameRenderer | null = null;
   constructor(private stateManager: StateManager) {}
+
+  //화면 초기화 메서드 추가
+
+  public initialize(gameArea: HTMLElement): void {
+    this.renderer = new GameRenderer(gameArea);
+  }
 
   public spawnWord(): void {
     const game = this.stateManager.snapshot.game;
-    if (!game?.running) return;
+    if (!game?.running || !this.renderer) return;
 
-    const randomText = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
-    if (!randomText) return;
+    const text = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
+    if (!text) return;
 
-    const text = randomText;
-    const wordElement = this.createWordElement(text);
-
+    // const wordElement = this.createWordElement(text);
     const areaWidth = game.area.clientWidth;
-    const wordWidth = wordElement.offsetWidth || 80;
+    const wordWidth = game.area.offsetWidth || 80;
     const maxX = Math.max(0, areaWidth - wordWidth - 16);
 
     const x = Math.floor(Math.random() * (maxX + 1)) + 8;
-    wordElement.style.left = x + "px";
+
+    const wordElement = this.renderer.createWordElement(text, x);
 
     const wordState: WordState = {
       id: this.generateWordId(),
@@ -34,6 +41,7 @@ export class GameEngine {
     };
     this.stateManager.updateGame(g => g.words.push(wordState));
   }
+
   public submitTypedWord(): void {
     const game = this.stateManager.snapshot.game;
     if (!game?.running) return;
@@ -74,7 +82,7 @@ export class GameEngine {
   // 단어들 위치 업데이트 (게임 루프에서 호출)
   public updateWords(delta: number): void {
     const game = this.stateManager.snapshot.game;
-    if (!game) return;
+    if (!game || !this.renderer) return;
 
     const areaHeight = game.area.clientHeight;
     const remaining: WordState[] = [];
@@ -89,7 +97,7 @@ export class GameEngine {
         continue;
       }
 
-      word.element.style.top = word.y + "px";
+      this.renderer.updateWordPosition(word);
       remaining.push(word);
     }
 
@@ -104,21 +112,17 @@ export class GameEngine {
   // Skip 버튼 상태 업데이트
   public updateSkipButton(): void {
     const game = this.stateManager.snapshot.game;
-    if (!game) return;
+    if (!game || !this.renderer) return;
 
-    game.skipButton.disabled = game.words.length === 0;
+    this.renderer.updateSkipButton(game.skipButton, game.words.length > 0);
   }
 
   // 놓친 단어 처리
   public markMiss(word: WordState): void {
-    if (!this.stateManager.snapshot.game || !word || word.missed) return;
+    if (!this.stateManager.snapshot.game || !word || word.missed || !this.renderer) return;
 
     word.missed = true;
-    word.element.classList.add("miss");
-
-    setTimeout(() => {
-      word.element.parentNode?.removeChild(word.element);
-    }, 240);
+    this.renderer.showMissEffect(word.element);
 
     this.stateManager.updateGame(g => {
       g.misses += 1;
@@ -126,17 +130,6 @@ export class GameEngine {
     this.updateAccuracy(); // 이미 game-logic.ts에 있음
   }
 
-  private createWordElement(text: string) {
-    const wordElement = document.createElement("div");
-    wordElement.className = "word";
-    wordElement.textContent = text;
-    wordElement.style.top = `${WORD_SPAWN_Y}px`;
-    if (this.stateManager.snapshot.game) {
-      this.stateManager.snapshot.game.area.appendChild(wordElement);
-    }
-
-    return wordElement;
-  }
   private generateWordId(): string {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   }
@@ -147,7 +140,7 @@ export class GameEngine {
   }
   private handleCorrectWord(matchIndex: number): void {
     const game = this.stateManager.snapshot.game;
-    if (!game) return;
+    if (!game || !this.renderer) return;
 
     let matched: WordState | undefined;
     this.stateManager.updateGame(g => {
@@ -156,8 +149,7 @@ export class GameEngine {
       g.hits += 1;
     });
     if (matched) {
-      matched.element.classList.add("hit");
-      setTimeout(() => matched!.element.remove(), 180);
+      this.renderer.showHitEffect(matched.element);
     }
 
     this.updateScore();
@@ -176,17 +168,19 @@ export class GameEngine {
 
   // 점수 표시 업데이트
   private updateScore(): void {
-    if (!this.stateManager.snapshot.game) return;
-    this.stateManager.snapshot.game.scoreDisplay.textContent = this.stateManager.snapshot.game.score.toString();
+    const game = this.stateManager.snapshot.game;
+    if (!game || !this.renderer) return;
+
+    this.renderer.updateScoreDisplay(game.scoreDisplay, game.score);
   }
 
   // 정확도 표시 업데이트
   private updateAccuracy(): void {
     const game = this.stateManager.snapshot.game;
-    if (!game) return;
+    if (!game || !this.renderer) return;
 
     const accuracy = calculateAccuracy(game.hits, game.misses);
-    game.accuracyDisplay.textContent = accuracy + "%";
+    this.renderer.updateAccuracyDisplay(game.accuracyDisplay, accuracy);
   }
 
   // 바닥에 가장 가까운 단어의 인덱스 찾기

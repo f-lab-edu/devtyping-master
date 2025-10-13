@@ -71,6 +71,9 @@ export function renderGameScreen(container: HTMLElement): void {
     running: true,
   });
 
+  // renderer 초기화
+  gameEngine.initialize(gameArea);
+
   typingInput.addEventListener("keydown", event => {
     if (event.key === "Enter") {
       event.preventDefault();
