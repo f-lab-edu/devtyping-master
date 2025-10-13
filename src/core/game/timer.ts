@@ -6,7 +6,7 @@ export class GameTimer {
   private countdownId: ReturnType<typeof setInterval> | null = null;
   private spawnId: ReturnType<typeof setInterval> | null = null;
   private animationId: number | null = null;
-  private lastFrame: number = 0; // ✅ 추
+  private lastFrame: number = 0;
 
   constructor(private stateManager: StateManager, private gameEngine: GameEngine) {}
 

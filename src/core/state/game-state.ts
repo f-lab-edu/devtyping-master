@@ -17,7 +17,7 @@ export class StateManager {
 
   subscribe(fn: () => void) {
     this.listeners.push(fn);
-    // 클로저: fn을 기억하는 함수 반환
+    // 구독 차단  return  :: 현재는 사용 안함
     return () => {
       this.listeners = this.listeners.filter(f => f !== fn);
     };
