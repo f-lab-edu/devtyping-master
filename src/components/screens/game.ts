@@ -15,16 +15,16 @@ export function renderGameScreen(container: HTMLElement): void {
 
   const playerStat = createStatBlock("플레이어", stateManager.snapshot.playerName);
   const timerStat = createStatBlock("남은 시간", "60.0s");
-  timerStat.querySelector(".stat-value")!.id = "timer-display";
+  const timerDisplay = timerStat.querySelector(".stat-value")! as HTMLElement;
   const scoreStat = createStatBlock("점수", "0");
-  scoreStat.querySelector(".stat-value")!.id = "score-display";
+  const scoreDisplay = scoreStat.querySelector(".stat-value")! as HTMLElement;
 
   header.appendChild(playerStat);
   header.appendChild(timerStat);
   header.appendChild(scoreStat);
 
   const accuracyBlock = createStatBlock("정확도", "100%");
-  accuracyBlock.querySelector(".stat-value")!.id = "accuracy-display";
+  const accuracyDisplay = accuracyBlock.querySelector(".stat-value")! as HTMLElement;
 
   const gameArea = document.createElement("div");
   gameArea.className = "game-area";
@@ -64,9 +64,10 @@ export function renderGameScreen(container: HTMLElement): void {
     words: [],
     area: gameArea,
     input: typingInput,
-    timerDisplay: document.getElementById("timer-display")!,
-    scoreDisplay: document.getElementById("score-display")!,
-    accuracyDisplay: document.getElementById("accuracy-display")!,
+    skipButton: skipButton,
+    timerDisplay: timerDisplay,
+    scoreDisplay: scoreDisplay,
+    accuracyDisplay: accuracyDisplay,
     running: true,
   });
 
