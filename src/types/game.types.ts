@@ -20,6 +20,7 @@ export interface GameState {
   timerDisplay: HTMLElement;
   scoreDisplay: HTMLElement;
   accuracyDisplay: HTMLElement;
+  skipButton: HTMLButtonElement;
   running: boolean;
 }
 export interface AppState {

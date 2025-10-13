@@ -1,6 +1,7 @@
 import { StateManager, stateManager } from "../state";
 import type { WordState } from "../../types";
 import { SPEED_CONVERSION_FACTOR, WORD_BANK, WORD_BOTTOM_OFFSET, WORD_SPAWN_Y, WORD_SPEED_RANGE } from "../constants";
+import { calculateAccuracy } from "../../utils";
 
 export class GameEngine {
   constructor(private stateManager: StateManager) {}
@@ -55,11 +56,11 @@ export class GameEngine {
   }
   //단어 스킵 버튼 호출
   public skipBottomWord() {
-    const g = stateManager.snapshot.game;
+    const g = this.stateManager.snapshot.game;
     if (!g || g.words.length === 0) return;
     const bottomIdx = this.findBottomWordIndex(g.words);
 
-    stateManager.updateGame(game => {
+    this.stateManager.updateGame(game => {
       const skipped = game.words[bottomIdx];
       if (!skipped) return;
       game.words.splice(bottomIdx, 1);
@@ -70,21 +71,6 @@ export class GameEngine {
     g.input.focus();
   }
 
-  // 바닥에 가장 가까운 단어의 인덱스 찾기
-  private findBottomWordIndex(words: WordState[]): number {
-    if (words.length === 0) return -1;
-
-    let bottomIdx = 0;
-    let maxY = words[0]!.y;
-    for (let i = 1; i < words.length; i++) {
-      const word = words[i];
-      if (word && word.y > maxY) {
-        maxY = word.y;
-        bottomIdx = i;
-      }
-    }
-    return bottomIdx;
-  }
   // 단어들 위치 업데이트 (게임 루프에서 호출)
   public updateWords(delta: number): void {
     const game = this.stateManager.snapshot.game;
@@ -120,10 +106,7 @@ export class GameEngine {
     const game = this.stateManager.snapshot.game;
     if (!game) return;
 
-    const skipButton = document.getElementById("skip-button") as HTMLButtonElement | null;
-    if (!skipButton) return;
-
-    skipButton.disabled = game.words.length === 0;
+    game.skipButton.disabled = game.words.length === 0;
   }
 
   // 놓친 단어 처리
@@ -199,11 +182,27 @@ export class GameEngine {
 
   // 정확도 표시 업데이트
   private updateAccuracy(): void {
-    if (!this.stateManager.snapshot.game) return;
+    const game = this.stateManager.snapshot.game;
+    if (!game) return;
 
-    const total = this.stateManager.snapshot.game.hits + this.stateManager.snapshot.game.misses;
-    const value = total === 0 ? 100 : Math.round((this.stateManager.snapshot.game.hits / total) * 100);
-    this.stateManager.snapshot.game.accuracyDisplay.textContent = value + "%";
+    const accuracy = calculateAccuracy(game.hits, game.misses);
+    game.accuracyDisplay.textContent = accuracy + "%";
+  }
+
+  // 바닥에 가장 가까운 단어의 인덱스 찾기
+  private findBottomWordIndex(words: WordState[]): number {
+    if (words.length === 0) return -1;
+
+    let bottomIdx = 0;
+    let maxY = words[0]!.y;
+    for (let i = 1; i < words.length; i++) {
+      const word = words[i];
+      if (word && word.y > maxY) {
+        maxY = word.y;
+        bottomIdx = i;
+      }
+    }
+    return bottomIdx;
   }
 }
 export const gameEngine = new GameEngine(stateManager);

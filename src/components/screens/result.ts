@@ -12,7 +12,7 @@ export function renderResultScreen(container: HTMLElement): void {
 
   const outcomeBadge = document.createElement("div");
   outcomeBadge.className = "badge";
-  const outcome = getGameOutcome(result!);
+  const outcome = getGameOutcome(result!.score);
   outcomeBadge.textContent = outcome;
 
   const title = document.createElement("h1");
@@ -29,7 +29,7 @@ export function renderResultScreen(container: HTMLElement): void {
   const details = document.createElement("div");
   details.className = "result-details";
 
-  const accuracyValue = calculateAccuracy(result!);
+  const accuracyValue = calculateAccuracy(result!.hits, result!.misses);
 
   details.appendChild(createResultRow("정확히 친 단어", result!.hits + " 개"));
   details.appendChild(createResultRow("놓친 단어", result!.misses + " 개"));
