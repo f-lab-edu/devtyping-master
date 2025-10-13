@@ -53,7 +53,38 @@ export class GameEngine {
     game.input.value = "";
     game.input.focus();
   }
+  //단어 스킵 버튼 호출
+  public skipBottomWord() {
+    const g = stateManager.snapshot.game;
+    if (!g || g.words.length === 0) return;
+    const bottomIdx = this.findBottomWordIndex(g.words);
 
+    stateManager.updateGame(game => {
+      const skipped = game.words[bottomIdx];
+      if (!skipped) return;
+      game.words.splice(bottomIdx, 1);
+      gameEngine.markMiss(skipped);
+    });
+
+    g.input.value = "";
+    g.input.focus();
+  }
+
+  // 바닥에 가장 가까운 단어의 인덱스 찾기
+  private findBottomWordIndex(words: WordState[]): number {
+    if (words.length === 0) return -1;
+
+    let bottomIdx = 0;
+    let maxY = words[0]!.y;
+    for (let i = 1; i < words.length; i++) {
+      const word = words[i];
+      if (word && word.y > maxY) {
+        maxY = word.y;
+        bottomIdx = i;
+      }
+    }
+    return bottomIdx;
+  }
   // 단어들 위치 업데이트 (게임 루프에서 호출)
   public updateWords(delta: number): void {
     const game = this.stateManager.snapshot.game;
