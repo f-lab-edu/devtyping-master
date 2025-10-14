@@ -34,6 +34,7 @@ export class GameTimer {
     this.spawnId = setInterval(() => this.gameEngine.spawnWord(), 2000);
   }
 
+  //단어 루프 애니메이션
   public startGameLoop(): void {
     this.lastFrame = performance.now();
     this.animationId = requestAnimationFrame(this.gameLoop.bind(this));
@@ -59,11 +60,7 @@ export class GameTimer {
     this.clearAllTimers();
 
     // 결과 저장
-    const { score, hits, misses, words } = this.stateManager.snapshot.game!;
-    // 남은 단어들 정리
-    words.forEach(word => {
-      word.element.parentNode?.removeChild(word.element);
-    });
+    const { score, hits, misses } = this.stateManager.snapshot.game!;
 
     this.stateManager.setGameResult(score, hits, misses);
     this.stateManager.setView("result");
@@ -101,7 +98,7 @@ export class GameTimer {
 
     this.gameEngine.updateWords(delta);
     this.updateTimer(now);
-
+    //게임종료
     if (now >= this.stateManager.snapshot.game.endsAt) {
       this.finishGame();
       return;

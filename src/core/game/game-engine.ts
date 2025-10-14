@@ -1,7 +1,6 @@
 import { StateManager, stateManager } from "../state";
 import type { WordState } from "../../types";
 import { SPEED_CONVERSION_FACTOR, WORD_BANK, WORD_BOTTOM_OFFSET, WORD_SPEED_RANGE } from "../constants";
-import { calculateAccuracy } from "../../utils";
 
 //dom 요소 없이 로직만
 export class GameEngine {
