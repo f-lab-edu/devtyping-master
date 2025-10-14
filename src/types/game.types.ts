@@ -4,8 +4,12 @@ export interface WordState {
   x: number;
   y: number;
   speed: number;
-  element: HTMLDivElement;
   missed: boolean;
+}
+
+export interface wordElement {
+  id: string;
+  element: HTMLDivElement;
 }
 
 export interface GameState {

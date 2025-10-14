@@ -2,8 +2,10 @@ import { GAME_DURATION_MS } from "../../core/constants";
 import { gameEngine, gameTimer } from "../../core/game";
 import { stateManager } from "../../core/state";
 import { createStatBlock } from "../ui";
+import { GameView } from "../ui/game-view";
 
 export function renderGameScreen(container: HTMLElement): void {
+  //DOM 생성만 담당
   container.innerHTML = "";
 
   const card = document.createElement("div");
@@ -55,6 +57,17 @@ export function renderGameScreen(container: HTMLElement): void {
 
   container.appendChild(card);
 
+  const gameView = new GameView(gameArea, scoreDisplay, accuracyDisplay, skipButton);
+
+  // ✅ 게임 전용 구독 사용!
+  stateManager.subscribeGame(() => {
+    const gameState = stateManager.snapshot.game;
+    if (gameState) {
+      gameView.render(gameState);
+    }
+  });
+
+  //상태 초기화
   stateManager.setGame({
     startedAt: performance.now(),
     endsAt: performance.now() + GAME_DURATION_MS,
@@ -71,18 +84,15 @@ export function renderGameScreen(container: HTMLElement): void {
     running: true,
   });
 
-  // renderer 초기화
-  gameEngine.initialize(gameArea);
-
   typingInput.addEventListener("keydown", event => {
     if (event.key === "Enter") {
       event.preventDefault();
-      gameEngine.submitTypedWord();
+      gameEngine.submitTypedWord(); //단어 enter
     }
   });
 
   skipButton.addEventListener("click", () => {
-    gameEngine.skipBottomWord();
+    gameEngine.skipBottomWord(); //단어 skip
   });
 
   typingInput.focus();
