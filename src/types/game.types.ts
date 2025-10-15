@@ -20,6 +20,10 @@ export interface GameState {
   misses: number;
   words: WordState[];
   area: HTMLDivElement;
+
+  lastHitWordId: string | null; //맞춘단어
+  lastMissWordId: string | null; // 놓친단어
+
   input: HTMLInputElement;
   timerDisplay: HTMLElement;
   scoreDisplay: HTMLElement;

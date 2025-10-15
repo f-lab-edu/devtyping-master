@@ -44,13 +44,13 @@ export class GameEngine {
     if (!value) return null;
 
     const matchIndex = game.words.findIndex(word => word.text === value);
-
+    const matched = game.words[matchIndex];
     if (matchIndex >= 0) {
-      const matched = game.words[matchIndex];
       this.stateManager.updateGame(g => {
         g.words.splice(matchIndex, 1); //단어가 배열에서 사라져서 match된 단어가 어떤건지 알 수 없음
         g.score += 10;
         g.hits += 1;
+        g.lastHitWordId = matched!.id; //hit 매치된 id
       });
 
       game.input.value = "";
@@ -60,6 +60,7 @@ export class GameEngine {
     } else {
       this.stateManager.updateGame(g => {
         g.misses += 1;
+        g.lastMissWordId = matched!.id; //miss 매치된 id
       });
 
       game.input.value = "";
@@ -81,6 +82,7 @@ export class GameEngine {
     this.stateManager.updateGame(g => {
       g.words.splice(bottomIdx, 1);
       g.misses += 1;
+      g.lastMissWordId = skipped!.id;
       // gameEngine.markMiss(skipped);
     });
 

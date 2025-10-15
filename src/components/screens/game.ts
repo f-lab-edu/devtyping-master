@@ -55,7 +55,7 @@ export function renderGameScreen(container: HTMLElement): void {
   card.appendChild(gameArea);
   card.appendChild(inputWrap);
 
-  container.appendChild(card);
+  container.appendChild(card); //브라우저가 화면에 그림 (페인팅)
 
   const gameView = new GameView(gameArea, scoreDisplay, accuracyDisplay, skipButton);
 
@@ -75,6 +75,8 @@ export function renderGameScreen(container: HTMLElement): void {
     hits: 0,
     misses: 0,
     words: [],
+    lastHitWordId: null,
+    lastMissWordId: null,
     area: gameArea,
     input: typingInput,
     skipButton: skipButton,
