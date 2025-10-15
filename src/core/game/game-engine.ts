@@ -15,11 +15,15 @@ export class GameEngine {
     if (!text) return;
 
     const areaWidth = game.area.clientWidth;
-    const wordWidth = game.area.offsetWidth || 80;
-    const maxX = Math.max(0, areaWidth - wordWidth - 16);
-    const x = Math.floor(Math.random() * (maxX + 1)) + 8;
 
-    //단어생성해서보내요
+    // 텍스트 길이에 따라 대략적인 너비 계산
+    const estimatedWordWidth = text.length * 12 + 40;
+    const padding = 20;
+
+    const minX = padding;
+    const maxX = Math.max(minX, areaWidth - estimatedWordWidth - padding);
+    const x = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
+
     const wordState: WordState = {
       id: this.generateWordId(),
       text,
@@ -28,6 +32,7 @@ export class GameEngine {
       speed: this.getRandomSpeed(),
       missed: false,
     };
+
     this.stateManager.updateGame(g => g.words.push(wordState));
   }
 
@@ -43,7 +48,7 @@ export class GameEngine {
     if (matchIndex >= 0) {
       const matched = game.words[matchIndex];
       this.stateManager.updateGame(g => {
-        g.words.splice(matchIndex, 1);
+        g.words.splice(matchIndex, 1); //단어가 배열에서 사라져서 match된 단어가 어떤건지 알 수 없음
         g.score += 10;
         g.hits += 1;
       });
