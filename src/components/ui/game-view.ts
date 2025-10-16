@@ -5,6 +5,9 @@ export class GameView {
   //id와 element로 구성된 wordElements배열
   private wordElements: Map<string, HTMLDivElement> = new Map();
 
+  private lastProcessedHitId: string | null = null;
+  private lastProcessedMissId: string | null = null;
+
   constructor(
     private gameArea: HTMLElement, //#game-area
     // private timerDisplay: HTMLElement,
@@ -15,6 +18,16 @@ export class GameView {
 
   // ===== 메인 렌더링 메서드 =====
   public render(gameState: GameState): void {
+    if (gameState.lastHitWordId && gameState.lastHitWordId !== this.lastProcessedHitId) {
+      this.showHitEffect(gameState.lastHitWordId);
+      this.lastProcessedHitId = gameState.lastHitWordId;
+    }
+
+    if (gameState.lastMissWordId && gameState.lastMissWordId !== this.lastProcessedMissId) {
+      this.showMissEffect(gameState.lastMissWordId);
+      this.lastProcessedMissId = gameState.lastMissWordId;
+    }
+
     this.syncWords(gameState.words);
     this.updateUI(gameState);
   }
@@ -26,6 +39,10 @@ export class GameView {
     //words에 id가 없으면 제거
     for (const [id, element] of this.wordElements) {
       if (!currentIds.has(id)) {
+        // 이펙트 처리 중인 element는 보호
+        if (element.classList.contains("hit") || element.classList.contains("miss")) {
+          continue; // setTimeout이 삭제할 거예요
+        }
         element.remove();
         this.wordElements.delete(id);
       }
