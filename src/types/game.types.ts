@@ -20,7 +20,7 @@ export interface GameState {
   misses: number;
   words: WordState[];
   area: HTMLDivElement;
-
+  remainingTime: number;
   lastHitWordId: string | null; //맞춘단어
   lastMissWordId: string | null; // 놓친단어
 

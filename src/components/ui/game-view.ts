@@ -10,10 +10,10 @@ export class GameView {
 
   constructor(
     private gameArea: HTMLElement, //#game-area
-    // private timerDisplay: HTMLElement,
     private scoreDisplay: HTMLElement,
     private accuracyDisplay: HTMLElement,
     private skipButton: HTMLButtonElement,
+    private timerDisplay: HTMLElement,
   ) {}
 
   // ===== 메인 렌더링 메서드 =====
@@ -32,7 +32,7 @@ export class GameView {
     this.updateUI(gameState);
   }
 
-  //단어 동기화 :: 왜 하는걸까
+  //단어 동기화 :: words에서 slice된 단어 필터링해서 element 에서 삭제
   public syncWords(words: WordState[]): void {
     const currentIds = new Set(words.map(w => w.id));
 
@@ -109,6 +109,7 @@ export class GameView {
 
     // Skip 버튼
     this.skipButton.disabled = gameState.words.length === 0;
+    this.timerDisplay.textContent = gameState.remainingTime.toFixed(1) + "s";
   }
 
   //클린업 함수

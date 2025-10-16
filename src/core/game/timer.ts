@@ -109,10 +109,14 @@ export class GameTimer {
 
   // 타이머 표시 업데이트
   private updateTimer(now: number): void {
-    if (!this.stateManager.snapshot.game) return;
+    const game = this.stateManager.snapshot.game;
+    if (!game?.running) return;
 
-    const remaining = Math.max(0, Math.round((this.stateManager.snapshot.game.endsAt - now) / 100) / 10);
-    this.stateManager.snapshot.game.timerDisplay.textContent = remaining.toFixed(1) + "s";
+    const remaining = Math.max(0, Math.round((game.endsAt - now) / 100) / 10);
+
+    this.stateManager.updateGame(g => {
+      g.remainingTime = remaining;
+    });
   }
 }
 
