@@ -135,7 +135,11 @@ button:disabled {
   height: 320px;
   border-radius: 14px;
   border: 1px solid rgba(148, 163, 184, 0.25);
-  background: linear-gradient(160deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.85));
+  background: linear-gradient(
+    160deg,
+    rgba(30, 41, 59, 0.9),
+    rgba(15, 23, 42, 0.85)
+  );
   overflow: hidden;
 }
 
@@ -262,4 +266,7 @@ button:disabled {
   .game-header {
     grid-template-columns: 1fr;
   }
+}
+#name-form button {
+  margin-top: 20px;
 }
