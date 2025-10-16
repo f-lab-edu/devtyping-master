@@ -1,34 +1,339 @@
-# DevTyping Week 1 MVP
+# DevTyping 🎮⌨️
 
-바닐라 JavaScript로 구현한 60초 타이핑 게임의 최소 기능 제품(MVP)입니다. 이름 입력 → 카운트다운 → 타이핑 플레이 → 결과 화면 순서로 한 판의 흐름이 완주되도록 구성했습니다.
+> TypeScript 기반 타이핑 게임 - 관심사 분리와 상태 관리 학습 프로젝트
 
-## 실행 방법
+## 📌 프로젝트 소개
 
-- `npm run dev`: `src/` 폴더를 정적 서버로 제공합니다. 브라우저에서 `http://127.0.0.1:5173`로 접속하세요.
-- `npm run build`: `src/` 전체를 `dist/`로 복사해 간단한 배포 번들을 만듭니다.
-- `npm run test`: 현재는 자동화 테스트가 없으므로 자리표시자 스크립트만 포함되어 있습니다.
+떨어지는 프로그래밍 용어를 빠르게 타이핑하여 점수를 획득하는 웹 게임입니다.
+바닐라 TypeScript로 구현하여 JavaScript의 핵심 개념과 아키텍처 패턴을 학습하고 적용했습니다.
 
-서버를 실행하지 않고도 `src/index.html` 파일을 브라우저로 직접 열어 게임을 체험할 수 있습니다.
+**🎯 학습 목표**
 
-## 게임 규칙 요약
+- ✅ 관심사 분리 (Separation of Concerns) - Core / Components / Utils
+- ✅ 클래스 기반 상태 관리 패턴
+- ✅ Observer 패턴 구현 (이중 구독 시스템)
+- ✅ 뷰-로직 분리 (GameEngine + GameView)
+- ✅ CSS 애니메이션과 DOM 최적화
+- ✅ TypeScript Strict 모드 적용
 
-1. 이름을 입력하면 3·2·1 카운트다운 후 게임이 시작됩니다.
-2. 60초 동안 단어가 위에서 아래로 떨어집니다. 단어를 입력하고 Enter를 누르면 처리가 됩니다.
-3. 단어를 정확히 맞힐 때마다 10점을 얻습니다. 놓치거나 오입력하면 정확도가 하락합니다.
-4. 60초 종료 시 점수와 정확도를 정산하며, 120점 이상이면 `CLEAR`, 그렇지 않으면 `FAIL`이 표시됩니다.
-5. 결과 화면에서 즉시 재시작하거나 이름을 다시 입력할 수 있습니다.
+## 🎮 게임 방법
 
-## 폴더 구조
+1. 이름을 입력하고 시작
+2. 3초 카운트다운 후 게임 시작
+3. 화면 위에서 떨어지는 단어를 입력 후 Enter
+4. 60초 동안 최대한 많은 단어를 맞추세요!
+5. 목표 점수: 120점 (CLEAR)
+
+**조작법**
+
+- `Enter`: 단어 제출
+- `스킵 버튼`: 가장 아래 단어 건너뛰기 (정확도 감소)
+
+**점수 시스템**
+
+- 정답: +10점
+- 오답/스킵: 정확도 감소
+- 정확도 = hits / (hits + misses) × 100%
+
+## 🚀 시작하기
+
+### 설치
+
+```bash
+npm install
+```
+
+### 개발 서버 실행
+
+```bash
+npm run dev
+```
+
+→ http://127.0.0.1:5173 접속
+
+### 프로덕션 빌드
+
+```bash
+npm run build
+```
+
+## 🏗️ 기술 스택
+
+- **언어**: TypeScript (Strict Mode)
+- **런타임**: Browser (ES Module)
+- **스타일**: Vanilla CSS + CSS Animations
+- **상태 관리**: 자체 구현 StateManager (Observer Pattern)
+- **아키텍처**: Layered Architecture (Core-Components-Utils)
+
+## 📁 프로젝트 구조
 
 ```
-├─ src/          # 게임 소스 코드 (index.html, styles.css, main.js)
-├─ scripts/      # 개발/빌드 유틸리티 스크립트
-├─ dist/         # build 스크립트를 실행하면 생성되는 정적 산출물
-└─ package.json  # 프로젝트 메타데이터 및 npm 스크립트 정의
+src/
+├── app.ts                      # 애플리케이션 진입점 + 라우터
+├── index.html                  # HTML 템플릿
+├── styles.css                  # 글로벌 스타일 + 애니메이션
+│
+├── core/                       # 핵심 비즈니스 로직 (DOM 독립)
+│   ├── state/                  # 전역 상태 관리
+│   │   └── game-state.ts       # StateManager 클래스
+│   ├── game/                   # 게임 엔진
+│   │   ├── game-engine.ts      # 단어 생성/매칭/물리 연산
+│   │   ├── game-render.ts      # (사용 안함 - 리팩토링 대상)
+│   │   └── timer.ts            # 타이머/카운트다운/게임 루프
+│   └── constants/              # 게임 설정 상수
+│       └── game-config.ts      # 게임 난이도, 단어 뱅크
+│
+├── components/                 # UI 컴포넌트 (DOM 렌더링)
+│   ├── screens/                # 화면별 렌더링 함수
+│   │   ├── name-input.ts       # 이름 입력 화면
+│   │   ├── countdown.ts        # 카운트다운 화면
+│   │   ├── game.ts             # 게임 플레이 화면
+│   │   └── result.ts           # 결과 화면
+│   └── ui/                     # 재사용 가능한 UI 요소
+│       ├── ui-elements.ts      # 통계 블록 등
+│       └── game-view.ts        # 게임 뷰 클래스 (단어 렌더링)
+│
+├── utils/                      # 유틸리티 함수
+│   └── game-utils.ts           # 정확도 계산 등
+│
+└── types/                      # TypeScript 타입 정의
+    └── game.types.ts           # AppState, GameState, WordState
 ```
 
-## 향후 개선 아이디어
+## 💡 핵심 구현 사항
 
-- 난이도 옵션, 단어 뱅크 확장, 콤보/연속 히트 보너스 등 게임성 강화 요소 추가
-- ESLint/Prettier 구성 및 자동화 테스트 도입
-- 모바일 환경 대응 레이아웃 및 접근성 개선
+### 1. 이중 구독 시스템 (Dual Subscription)
+
+```typescript
+export class StateManager {
+  private listeners: Array<() => void> = [];      // 화면 전환용
+  private gameListeners: Array<() => void> = [];  // 게임 루프용
+
+  subscribe(fn: () => void) { /* ... */ }        // 화면 전환 시 호출
+  subscribeGame(fn: () => void) { /* ... */ }    // 게임 상태 변경 시 호출
+}
+```
+
+**목적**: 화면 전환과 게임 루프를 분리하여 불필요한 렌더링 방지
+
+### 2. 뷰-로직 분리 패턴
+
+```typescript
+// GameEngine (core/game) - 순수 로직
+class GameEngine {
+  submitTypedWord(inputValue: string): boolean { /* 매칭 로직만 */ }
+  updateWords(delta: number): void { /* 물리 연산만 */ }
+}
+
+// GameView (components/ui) - 렌더링만
+class GameView {
+  render(gameState: GameState): void { /* DOM 업데이트만 */ }
+  showHitEffect(wordId: string): void { /* 애니메이션만 */ }
+}
+```
+
+**장점**:
+- ✅ 테스트 용이 (로직과 DOM 분리)
+- ✅ 재사용성 향상
+- ✅ 단일 책임 원칙 준수
+
+### 3. CSS 애니메이션 최적화
+
+```typescript
+// 이펙트 처리 흐름
+render(gameState) {
+  // 1. 이펙트 클래스 추가 (hit/miss)
+  this.showHitEffect(wordId);
+
+  // 2. syncWords에서 이펙트 중인 element 보호
+  if (element.classList.contains('hit')) continue;
+
+  // 3. setTimeout으로 애니메이션 후 제거
+  setTimeout(() => element.remove(), 180);
+}
+```
+
+**애니메이션**:
+- `hit`: 확대 → 축소 (180ms, scale 효과)
+- `miss`: 좌우 흔들림 (240ms, shake 효과)
+
+### 4. requestAnimationFrame 게임 루프
+
+```typescript
+private gameLoop(now: number): void {
+  const delta = now - this.lastFrame;  // 프레임 간격 계산
+  this.lastFrame = now;
+
+  this.gameEngine.updateWords(delta);  // 물리 업데이트
+  this.updateTimer(now);               // 타이머 업데이트
+
+  if (now >= game.endsAt) {
+    this.finishGame();
+    return;
+  }
+
+  requestAnimationFrame(this.gameLoop.bind(this));
+}
+```
+
+**특징**:
+- 60fps 유지
+- 디바이스 리프레시 레이트에 맞춰 실행
+- delta time 기반 물리 연산 (속도 = pixel/s)
+
+### 5. 상태 중심 설계
+
+```typescript
+interface GameState {
+  // 게임 메타데이터
+  startedAt: number;
+  endsAt: number;
+  running: boolean;
+
+  // 게임 데이터
+  score: number;
+  hits: number;
+  misses: number;
+  words: WordState[];
+  remainingTime: number;
+
+  // 이펙트 추적
+  lastHitWordId: string | null;
+  lastMissWordId: string | null;
+
+  // DOM 참조 (리팩토링 예정)
+  area: HTMLDivElement;
+  input: HTMLInputElement;
+  // ...
+}
+```
+
+### 6. TypeScript Strict 모드
+
+```typescript
+// tsconfig.json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,  // 배열 접근 시 undefined 체크
+    "exactOptionalPropertyTypes": true, // 옵셔널 엄격 검사
+  }
+}
+```
+
+## 🎨 아키텍처 다이어그램
+
+```
+┌─────────────────────────────────────────────┐
+│              app.ts (Router)                │
+│  - subscribe(render)                        │
+│  - View Router (name/countdown/game/result) │
+└──────────────────┬──────────────────────────┘
+                   │
+        ┌──────────┴──────────┐
+        ▼                     ▼
+┌───────────────┐    ┌─────────────────┐
+│ StateManager  │    │ Components/     │
+│ (core/state)  │───▶│ Screens         │
+│               │    │ - renderGame()  │
+│ - subscribe   │    │ - renderResult()│
+│ - updateGame  │    └────────┬────────┘
+└───────┬───────┘             │
+        │                     ▼
+        │            ┌─────────────────┐
+        │            │ GameView        │
+        │            │ (components/ui) │
+        │            │                 │
+        ▼            │ - render()      │
+┌───────────────┐   │ - syncWords()   │
+│ GameEngine    │   │ - showEffect()  │
+│ (core/game)   │   └─────────────────┘
+│               │
+│ - spawnWord() │
+│ - updateWords()│
+│ - submitWord()│
+└───────┬───────┘
+        │
+        ▼
+┌───────────────┐
+│ GameTimer     │
+│ (core/game)   │
+│               │
+│ - gameLoop()  │
+│ - countdown() │
+└───────────────┘
+```
+
+## 📚 주요 학습 내용
+
+### 1. 관심사 분리 (Separation of Concerns)
+
+- **Core**: 비즈니스 로직, 상태 관리 (DOM 독립)
+- **Components**: UI 렌더링, 이벤트 핸들링
+- **Utils**: 순수 함수, 유틸리티
+
+### 2. 상태 관리 패턴
+
+- Observer Pattern으로 상태 변경 구독
+- 이중 구독 시스템 (화면/게임 분리)
+- Mutator 패턴으로 상태 업데이트
+
+### 3. 성능 최적화
+
+- `requestAnimationFrame`으로 렌더링 최적화
+- Delta time 기반 물리 연산
+- CSS 애니메이션 하드웨어 가속
+- Element 보호 로직 (이펙트 중복 방지)
+
+### 4. TypeScript 활용
+
+- Strict 모드로 타입 안정성 확보
+- Interface로 도메인 모델 정의
+- Generic 없이도 명확한 타입 시스템
+
+## 🔧 리팩토링 예정 사항
+
+### 현재 아키텍처 이슈
+
+1. **GameState에 DOM 참조 저장** (game.types.ts:22-31)
+   - `input`, `area`, `timerDisplay` 등을 state에 저장 중
+   - 컴포넌트 레벨에서 관리하도록 수정 예정
+
+2. **game-render.ts 미사용**
+   - GameView로 통합 완료, 삭제 예정
+
+3. **timer.ts의 DOM 조작** (timer.ts:115)
+   - `timerDisplay.textContent` 직접 수정
+   - State에 `remainingTime` 저장하고 GameView에서 렌더링하도록 변경 예정
+
+## 🎯 향후 개선 계획
+
+### 기능
+- [ ] 난이도 선택 (Easy/Normal/Hard)
+- [ ] 콤보 시스템 (연속 정답 보너스)
+- [ ] 로컬 스토리지로 최고 점수 저장
+- [ ] WPM (Words Per Minute) 계산
+- [ ] 사운드 효과 추가
+
+### 아키텍처
+- [ ] GameState에서 DOM 참조 제거
+- [ ] game-render.ts 삭제
+- [ ] timer.ts DOM 조작 제거
+- [ ] 의존성 주입 패턴 적용
+
+### UI/UX
+- [ ] 다크모드 지원
+- [ ] 반응형 디자인 개선
+- [ ] 키보드 단축키 추가
+
+## 📖 학습 자료
+
+자세한 학습 내용은 [LEARNING.md](LEARNING.md)를 참고하세요.
+
+## 🤝 기여
+
+이슈와 PR은 언제나 환영합니다!
+
+## 📝 라이선스
+
+MIT License

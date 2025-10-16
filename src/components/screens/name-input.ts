@@ -1,4 +1,4 @@
-import { startCountdown } from "../../core/game";
+import { gameTimer } from "../../core/game";
 import { stateManager } from "../../core/state";
 
 import { createCard, createButton, createInput } from "../ui";
@@ -46,14 +46,10 @@ export function renderNameScreen(container: HTMLElement): void {
       input.focus();
       return;
     }
-
+    button.disabled = true;
     stateManager.setPlayerName(value);
-    startCountdown();
+    gameTimer.startCountdown();
   });
-
-  card.appendChild(header);
-  card.appendChild(form);
-  container.appendChild(card);
 
   window.requestAnimationFrame(() => input.focus());
 }

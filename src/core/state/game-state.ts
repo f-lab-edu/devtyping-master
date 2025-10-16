@@ -2,10 +2,9 @@ import type { AppState, GameState } from "../../types";
 import { COUNTDOWN_START } from "../constants";
 
 export class StateManager {
-  readonly state: AppState;
-
-  // 구독자 목록
-  private listeners: Array<() => void> = [];
+  private state: AppState;
+  private listeners: Array<() => void> = []; //화면전환용
+  private gameListeners: Array<() => void> = []; //게임용
 
   constructor() {
     this.state = {
@@ -18,13 +17,25 @@ export class StateManager {
   }
 
   subscribe(fn: () => void) {
-    this.listeners.push(fn); //명단추가
+    this.listeners.push(fn);
+    // 구독 차단  return  :: 현재는 사용 안함
     return () => {
-      this.listeners = this.listeners.filter(f => f !== fn); //구독취소
+      this.listeners = this.listeners.filter(f => f !== fn);
     };
   }
+  subscribeGame(fn: () => void) {
+    this.gameListeners.push(fn);
+    // 구독 차단  return  :: 현재는 사용 안함
+    return () => {
+      this.gameListeners = this.gameListeners.filter(f => f !== fn);
+    };
+  }
+
   private notify() {
     for (const fn of this.listeners) fn();
+  }
+  private notifyGame() {
+    for (const fn of this.gameListeners) fn();
   }
 
   // getter (읽기 전용 접근)
@@ -48,12 +59,14 @@ export class StateManager {
   // ✅ 게임 상태 설정(초기화 용)
   setGame(next: GameState): void {
     this.state.game = next;
+    this.notifyGame();
   }
 
   // ✅ 게임 상태 일부 변경(뮤테이터 패턴)
   updateGame(mutator: (g: GameState) => void) {
     if (!this.state.game) return;
     mutator(this.state.game);
+    this.notifyGame();
   }
 
   // ✅ 카운트다운 전용 메서드들
@@ -67,12 +80,6 @@ export class StateManager {
     this.state.countdownValue -= 1;
     this.notify();
     return this.state.countdownValue;
-  }
-
-  resetGame(): void {
-    this.state.game = null;
-    this.state.result = null;
-    this.state.countdownValue = COUNTDOWN_START;
   }
 
   resetGameState(options?: {
@@ -98,6 +105,8 @@ export class StateManager {
     if (resetName) {
       this.state.playerName = "";
     }
+
+    this.notifyGame();
   }
 }
 export const stateManager = new StateManager();

@@ -1,10 +1,11 @@
 import { GAME_DURATION_MS } from "../../core/constants";
-import { markMiss, submitTypedWord } from "../../core/game";
-import { startGameLoop, startSpawningWords } from "../../core/game";
+import { gameEngine, gameTimer } from "../../core/game";
 import { stateManager } from "../../core/state";
 import { createStatBlock } from "../ui";
+import { GameView } from "../ui/game-view";
 
 export function renderGameScreen(container: HTMLElement): void {
+  //DOM 생성만 담당
   container.innerHTML = "";
 
   const card = document.createElement("div");
@@ -16,16 +17,16 @@ export function renderGameScreen(container: HTMLElement): void {
 
   const playerStat = createStatBlock("플레이어", stateManager.snapshot.playerName);
   const timerStat = createStatBlock("남은 시간", "60.0s");
-  timerStat.querySelector(".stat-value")!.id = "timer-display";
+  const timerDisplay = timerStat.querySelector(".stat-value")! as HTMLElement;
   const scoreStat = createStatBlock("점수", "0");
-  scoreStat.querySelector(".stat-value")!.id = "score-display";
+  const scoreDisplay = scoreStat.querySelector(".stat-value")! as HTMLElement;
 
   header.appendChild(playerStat);
   header.appendChild(timerStat);
   header.appendChild(scoreStat);
 
   const accuracyBlock = createStatBlock("정확도", "100%");
-  accuracyBlock.querySelector(".stat-value")!.id = "accuracy-display";
+  const accuracyDisplay = accuracyBlock.querySelector(".stat-value")! as HTMLElement;
 
   const gameArea = document.createElement("div");
   gameArea.className = "game-area";
@@ -54,8 +55,19 @@ export function renderGameScreen(container: HTMLElement): void {
   card.appendChild(gameArea);
   card.appendChild(inputWrap);
 
-  container.appendChild(card);
+  container.appendChild(card); //브라우저가 화면에 그림 (페인팅)
 
+  const gameView = new GameView(gameArea, scoreDisplay, accuracyDisplay, skipButton, timerDisplay);
+
+  // ✅ 게임 전용 구독 사용!
+  stateManager.subscribeGame(() => {
+    const gameState = stateManager.snapshot.game;
+    if (gameState) {
+      gameView.render(gameState);
+    }
+  });
+
+  //상태 초기화
   stateManager.setGame({
     startedAt: performance.now(),
     endsAt: performance.now() + GAME_DURATION_MS,
@@ -63,51 +75,34 @@ export function renderGameScreen(container: HTMLElement): void {
     hits: 0,
     misses: 0,
     words: [],
+    remainingTime: 0,
+    lastHitWordId: null,
+    lastMissWordId: null,
     area: gameArea,
     input: typingInput,
-    timerDisplay: document.getElementById("timer-display")!,
-    scoreDisplay: document.getElementById("score-display")!,
-    accuracyDisplay: document.getElementById("accuracy-display")!,
+    skipButton: skipButton,
+    timerDisplay: timerDisplay,
+    scoreDisplay: scoreDisplay,
+    accuracyDisplay: accuracyDisplay,
     running: true,
   });
 
   typingInput.addEventListener("keydown", event => {
     if (event.key === "Enter") {
       event.preventDefault();
-      submitTypedWord();
+      gameEngine.submitTypedWord(typingInput.value); //단어 enter
+      typingInput.value = "";
+      typingInput.focus();
     }
   });
 
   skipButton.addEventListener("click", () => {
-    const g = stateManager.snapshot.game;
-    if (!g || g.words.length === 0) return;
-
-    // 바닥에 가장 가까운 단어의 인덱스 찾기
-    const firstWord = g.words[0];
-    if (!firstWord) return;
-
-    let bottomIdx = 0;
-    let maxY = firstWord.y;
-    for (let i = 1; i < g.words.length; i++) {
-      const word = g.words[i];
-      if (word && word.y > maxY) {
-        maxY = word.y;
-        bottomIdx = i;
-      }
-    }
-
-    stateManager.updateGame(game => {
-      const skipped = game.words[bottomIdx];
-      if (!skipped) return;
-      game.words.splice(bottomIdx, 1);
-      markMiss(skipped);
-    });
-
-    g.input.value = "";
-    g.input.focus();
+    gameEngine.skipBottomWord(); //단어 skip
+    typingInput.value = "";
+    typingInput.focus();
   });
 
   typingInput.focus();
-  startSpawningWords();
-  startGameLoop();
+  gameTimer.startSpawningWords();
+  gameTimer.startGameLoop();
 }

@@ -1,118 +1,123 @@
 ﻿import { COUNTDOWN_START } from "../constants";
-import { stateManager } from "../state";
-import { spawnWord, updateWords } from "./game-engine";
-import { updateTimer } from "../../utils";
+import { stateManager, StateManager } from "../state";
+import { gameEngine, GameEngine } from "./game-engine";
 
-// 활성화된 타이머 ID를 추적
-interface TimerManager {
-  countdownId: ReturnType<typeof setInterval> | null;
-  spawnId: ReturnType<typeof setInterval> | null;
-  animationId: number | null;
-}
+export class GameTimer {
+  private countdownId: ReturnType<typeof setInterval> | null = null;
+  private spawnId: ReturnType<typeof setInterval> | null = null;
+  private animationId: number | null = null;
+  private lastFrame: number = 0;
 
-const timers: TimerManager = {
-  countdownId: null,
-  spawnId: null,
-  animationId: null,
-};
+  constructor(private stateManager: StateManager, private gameEngine: GameEngine) {}
 
-// 카운트다운 시작
-export function startCountdown(): void {
-  clearCountdownTimer();
+  // ===== Public Methods =====
+  // 카운트다운 시작
+  public startCountdown(): void {
+    this.clearCountdownTimer();
 
-  stateManager.setCountdown(COUNTDOWN_START);
-  stateManager.setView("countdown");
+    this.stateManager.setCountdown(COUNTDOWN_START);
+    this.stateManager.setView("countdown");
 
-  timers.countdownId = setInterval(() => {
-    const current = stateManager.tickCountdown();
+    this.countdownId = setInterval(() => {
+      const current = this.stateManager.tickCountdown();
 
-    if (current < 0) {
-      clearCountdownTimer();
-      stateManager.setView("game");
-    }
-  }, 1000);
-}
-
-//단어 생성기 시작
-export function startSpawningWords(): void {
-  clearSpawnTimer(); //중복방지
-  spawnWord();
-  timers.spawnId = setInterval(spawnWord, 2000);
-}
-
-export function startGameLoop(): void {
-  let lastFrame = performance.now();
-
-  const loop = (now: number) => {
-    if (!stateManager.snapshot.game?.running) {
-      return;
-    }
-
-    const delta = now - lastFrame;
-    lastFrame = now;
-
-    updateWords(delta);
-    //시간제한 업데이트
-    updateTimer(now);
-
-    if (now >= stateManager.snapshot.game.endsAt) {
-      finishGame();
-      return;
-    }
-
-    timers.animationId = requestAnimationFrame(loop);
-  };
-
-  timers.animationId = requestAnimationFrame(loop);
-}
-
-// 타이머별 정리 함수
-export function clearCountdownTimer(): void {
-  if (timers.countdownId) {
-    clearInterval(timers.countdownId);
-    timers.countdownId = null;
+      if (current < 0) {
+        this.clearCountdownTimer();
+        this.stateManager.setView("game");
+      }
+    }, 1000);
   }
-}
-export function clearSpawnTimer(): void {
-  if (timers.spawnId) {
-    clearInterval(timers.spawnId);
-    timers.spawnId = null;
+  //단어 생성기 시작
+  public startSpawningWords(): void {
+    this.clearSpawnTimer(); //중복방지
+    this.gameEngine.spawnWord();
+    this.spawnId = setInterval(() => this.gameEngine.spawnWord(), 2000);
   }
-}
 
-export function clearAnimationTimer(): void {
-  if (timers.animationId) {
-    cancelAnimationFrame(timers.animationId);
-    timers.animationId = null;
+  //단어 루프 애니메이션
+  public startGameLoop(): void {
+    this.lastFrame = performance.now();
+    this.animationId = requestAnimationFrame(this.gameLoop.bind(this));
   }
-}
-
-// 모든 타이머 정리
-export function clearAllTimers(): void {
-  clearCountdownTimer();
-  clearSpawnTimer();
-  clearAnimationTimer();
-}
-
-// 게임 종료 처리
-export function finishGame(): void {
-  const game = stateManager.snapshot.game;
-  if (!game?.running) return;
-
-  stateManager.updateGame(g => {
-    g.running = false;
-  });
 
   // 모든 타이머 정리
-  clearAllTimers();
+  public clearAllTimers(): void {
+    this.clearCountdownTimer();
+    this.clearSpawnTimer();
+    this.clearAnimationTimer();
+  }
 
-  // 결과 저장
-  const { score, hits, misses, words } = stateManager.snapshot.game!;
-  // 남은 단어들 정리
-  words.forEach(word => {
-    word.element.parentNode?.removeChild(word.element);
-  });
+  // 게임 종료 처리
+  public finishGame(): void {
+    const game = this.stateManager.snapshot.game;
+    if (!game?.running) return;
 
-  stateManager.setGameResult(score, hits, misses);
-  stateManager.setView("result");
+    this.stateManager.updateGame(g => {
+      g.running = false;
+    });
+
+    // 모든 타이머 정리
+    this.clearAllTimers();
+
+    // 결과 저장
+    const { score, hits, misses } = this.stateManager.snapshot.game!;
+
+    this.stateManager.setGameResult(score, hits, misses);
+    this.stateManager.setView("result");
+  }
+
+  // ===== Private Methods =====
+  // 타이머별 정리 함수
+  private clearCountdownTimer(): void {
+    if (this.countdownId) {
+      clearInterval(this.countdownId);
+      this.countdownId = null;
+    }
+  }
+  private clearSpawnTimer(): void {
+    if (this.spawnId) {
+      clearInterval(this.spawnId);
+      this.spawnId = null;
+    }
+  }
+
+  private clearAnimationTimer(): void {
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+  }
+
+  private gameLoop(now: number): void {
+    if (!this.stateManager.snapshot.game?.running) {
+      return;
+    }
+
+    const delta = now - this.lastFrame; // ✅ 클래스 멤버 사용
+    this.lastFrame = now;
+
+    this.gameEngine.updateWords(delta);
+    this.updateTimer(now);
+    //게임종료
+    if (now >= this.stateManager.snapshot.game.endsAt) {
+      this.finishGame();
+      return;
+    }
+
+    this.animationId = requestAnimationFrame(this.gameLoop.bind(this));
+  }
+
+  // 타이머 표시 업데이트
+  private updateTimer(now: number): void {
+    const game = this.stateManager.snapshot.game;
+    if (!game?.running) return;
+
+    const remaining = Math.max(0, Math.round((game.endsAt - now) / 100) / 10);
+
+    this.stateManager.updateGame(g => {
+      g.remainingTime = remaining;
+    });
+  }
 }
+
+export const gameTimer = new GameTimer(stateManager, gameEngine);

@@ -1,149 +1,134 @@
-import { stateManager } from "../state";
+import { StateManager, stateManager } from "../state";
 import type { WordState } from "../../types";
-import { WORD_BANK, WORD_SPEED_RANGE } from "../constants";
-import { updateAccuracy, updateScore } from "../../utils";
+import { SPEED_CONVERSION_FACTOR, WORD_BANK, WORD_BOTTOM_OFFSET, WORD_SPEED_RANGE } from "../constants";
 
-export function spawnWord() {
-  const game = stateManager.snapshot.game;
-  if (!game?.running) return;
+//dom 요소 없이 로직만
+export class GameEngine {
+  constructor(private stateManager: StateManager) {}
 
-  const randomText = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
-  if (!randomText) return;
+  //단어 생성기 시작되면 게임의 단어 생성 :: 단어 데이터만 WordState로 보내
+  public spawnWord(): void {
+    const game = this.stateManager.snapshot.game;
+    if (!game?.running) return;
 
-  const text = randomText;
-  const wordElement = createWordElement(text);
+    const text = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
+    if (!text) return;
 
-  const areaWidth = game.area.clientWidth;
-  const wordWidth = wordElement.offsetWidth || 80;
-  const maxX = Math.max(0, areaWidth - wordWidth - 16);
+    const areaWidth = game.area.clientWidth;
 
-  const x = Math.floor(Math.random() * (maxX + 1)) + 8;
-  wordElement.style.left = x + "px";
+    // 텍스트 길이에 따라 대략적인 너비 계산
+    const estimatedWordWidth = text.length * 12 + 40;
+    const padding = 20;
 
-  const wordState: WordState = {
-    id: generateWordId(),
-    text,
-    x,
-    y: -40,
-    speed: getRandomSpeed(),
-    element: wordElement,
-    missed: false,
-  };
-  stateManager.updateGame(g => g.words.push(wordState));
-}
+    const minX = padding;
+    const maxX = Math.max(minX, areaWidth - estimatedWordWidth - padding);
+    const x = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
 
-export function createWordElement(text: string) {
-  const wordElement = document.createElement("div");
-  wordElement.className = "word";
-  wordElement.textContent = text;
-  wordElement.style.top = "-40px";
-  if (stateManager.snapshot.game) {
-    stateManager.snapshot.game.area.appendChild(wordElement);
+    const wordState: WordState = {
+      id: this.generateWordId(),
+      text,
+      x,
+      y: -40,
+      speed: this.getRandomSpeed(),
+      missed: false,
+    };
+
+    this.stateManager.updateGame(g => g.words.push(wordState));
   }
 
-  return wordElement;
-}
+  public submitTypedWord(inputValue: string): string | null {
+    const game = this.stateManager.snapshot.game;
+    if (!game?.running) return null;
 
-function generateWordId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-}
+    const value = inputValue.trim();
+    if (!value) return null;
 
-function getRandomSpeed(): number {
-  const [min, max] = WORD_SPEED_RANGE;
+    const matchIndex = game.words.findIndex(word => word.text === value);
+    if (matchIndex >= 0) {
+      const matched = game.words[matchIndex];
+      this.stateManager.updateGame(g => {
+        g.words.splice(matchIndex, 1); //단어가 배열에서 사라져서 match된 단어가 어떤건지 알 수 없음
+        g.score += 10;
+        g.hits += 1;
+        g.lastHitWordId = matched!.id; //hit 매치된 id
+      });
 
-  return Math.random() * (max - min) + min;
-}
-
-export function submitTypedWord() {
-  const game = stateManager.snapshot.game;
-  if (!game?.running) return;
-
-  const value = game.input.value.trim();
-  if (!value) {
-    return;
+      return matched!.id; // ✅ id 반환
+    } else {
+      return null;
+    }
   }
 
-  const matchIndex = game.words.findIndex(word => word.text === value);
+  //단어 스킵 버튼 호출 :: 로직만으로 분리
+  public skipBottomWord(): string | null {
+    const game = this.stateManager.snapshot.game;
+    if (!game || game.words.length === 0) return null;
 
-  if (matchIndex >= 0) {
-    handleCorrectWord(matchIndex);
-  } else {
-    handleIncorrectWord();
+    const bottomIdx = this.findBottomWordIndex(game.words);
+    const skipped = game.words[bottomIdx];
+    if (!skipped) return null;
+
+    this.stateManager.updateGame(g => {
+      g.words.splice(bottomIdx, 1);
+      g.misses += 1;
+      g.lastMissWordId = skipped!.id;
+    });
+
+    return skipped.id; //skip된 id반환
   }
 
-  game.input.value = "";
-  game.input.focus();
-}
+  // 바닥에 가장 가까운 단어의 인덱스 찾기
+  private findBottomWordIndex(words: WordState[]): number {
+    if (words.length === 0) return -1;
 
-function handleCorrectWord(matchIndex: number): void {
-  const game = stateManager.snapshot.game;
-  if (!game) return;
-
-  let matched: WordState | undefined;
-  stateManager.updateGame(g => {
-    matched = g.words.splice(matchIndex, 1)[0];
-    g.score += 10;
-    g.hits += 1;
-  });
-  if (matched) {
-    matched?.element.classList.add("hit");
-    setTimeout(() => matched!.element.remove(), 180);
+    let bottomIdx = 0;
+    let maxY = words[0]!.y;
+    for (let i = 1; i < words.length; i++) {
+      const word = words[i];
+      if (word && word.y > maxY) {
+        maxY = word.y;
+        bottomIdx = i;
+      }
+    }
+    return bottomIdx;
   }
 
-  updateScore();
-  updateAccuracy();
-}
+  // 단어들 위치 업데이트 (게임 루프에서 호출)
+  public updateWords(delta: number): void {
+    const game = this.stateManager.snapshot.game;
+    if (!game) return;
 
-function handleIncorrectWord(): void {
-  if (!stateManager.snapshot.game) return;
+    const areaHeight = game.area.clientHeight;
+    const remaining: WordState[] = [];
+    const reachedBottom = areaHeight - WORD_BOTTOM_OFFSET;
 
-  stateManager.updateGame(g => {
-    g.misses += 1;
-  });
+    for (const word of game.words) {
+      word.y += (word.speed * delta) / SPEED_CONVERSION_FACTOR;
 
-  updateAccuracy();
-}
+      if (word.y >= reachedBottom && !word.missed) {
+        // 바닥에 닿았지만 아직 missed 표시 안됨 -> 첫 감지
+        word.missed = true; // 플래그 설정 (중복 miss 방지)
+        this.stateManager.updateGame(g => {
+          g.misses += 1;
+          g.lastMissWordId = word.id; // 👈 이펙트를 위한 id 설정
+        });
+      }
 
-// 단어들 위치 업데이트 (게임 루프에서 호출)
-export function updateWords(delta: number): void {
-  const game = stateManager.snapshot.game;
-  if (!game) return;
-
-  const areaHeight = game.area.clientHeight;
-  const remaining: WordState[] = [];
-  const reachedBottom = areaHeight - 34;
-
-  for (const word of game.words) {
-    // 속도 계산 수정 (1000으로 나누기)
-    word.y += (word.speed * delta) / 1000;
-
-    if (word.y >= reachedBottom) {
-      markMiss(word);
-      continue;
+      remaining.push(word);
     }
 
-    word.element.style.top = word.y + "px";
-    remaining.push(word);
+    this.stateManager.updateGame(g => {
+      g.words = remaining;
+    });
   }
 
-  stateManager.updateGame(g => {
-    g.words = remaining;
-  });
+  private generateWordId(): string {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+  private getRandomSpeed(): number {
+    const [min, max] = WORD_SPEED_RANGE;
+
+    return Math.random() * (max - min) + min;
+  }
 }
-
-// 놓친 단어 처리
-export function markMiss(word: WordState): void {
-  if (!stateManager.snapshot.game || !word || word.missed) return;
-
-  word.missed = true;
-  word.element.classList.add("miss");
-
-  setTimeout(() => {
-    word.element.parentNode?.removeChild(word.element);
-  }, 240);
-
-  stateManager.updateGame(g => {
-    g.misses += 1;
-  });
-  updateAccuracy(); // 이미 game-logic.ts에 있음
-}
+export const gameEngine = new GameEngine(stateManager);

@@ -12,10 +12,8 @@
     "test": "echo \"No automated tests yet\""
   },
   "devDependencies": {
-    "@babel/cli": "^7.28.3",
-    "@babel/core": "^7.28.4",
-    "@babel/preset-env": "^7.28.3",
-    "@babel/preset-typescript": "^7.27.1",
+    "sass": "^1.93.2",
+    "terser": "^5.44.0",
     "typescript": "^5.9.3",
     "vite": "^7.1.7"
   }

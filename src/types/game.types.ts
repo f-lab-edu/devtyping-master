@@ -4,8 +4,12 @@ export interface WordState {
   x: number;
   y: number;
   speed: number;
-  element: HTMLDivElement;
   missed: boolean;
+}
+
+export interface wordElement {
+  id: string;
+  element: HTMLDivElement;
 }
 
 export interface GameState {
@@ -16,10 +20,15 @@ export interface GameState {
   misses: number;
   words: WordState[];
   area: HTMLDivElement;
+  remainingTime: number;
+  lastHitWordId: string | null; //맞춘단어
+  lastMissWordId: string | null; // 놓친단어
+
   input: HTMLInputElement;
   timerDisplay: HTMLElement;
   scoreDisplay: HTMLElement;
   accuracyDisplay: HTMLElement;
+  skipButton: HTMLButtonElement;
   running: boolean;
 }
 export interface AppState {
