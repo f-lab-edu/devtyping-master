@@ -36,16 +36,16 @@ export class GameEngine {
     this.stateManager.updateGame(g => g.words.push(wordState));
   }
 
-  public submitTypedWord(): string | null {
+  public submitTypedWord(inputValue: string): string | null {
     const game = this.stateManager.snapshot.game;
     if (!game?.running) return null;
 
-    const value = game.input.value.trim();
+    const value = inputValue.trim();
     if (!value) return null;
 
     const matchIndex = game.words.findIndex(word => word.text === value);
-    const matched = game.words[matchIndex];
     if (matchIndex >= 0) {
+      const matched = game.words[matchIndex];
       this.stateManager.updateGame(g => {
         g.words.splice(matchIndex, 1); //단어가 배열에서 사라져서 match된 단어가 어떤건지 알 수 없음
         g.score += 10;
@@ -53,19 +53,8 @@ export class GameEngine {
         g.lastHitWordId = matched!.id; //hit 매치된 id
       });
 
-      game.input.value = "";
-      game.input.focus();
-
       return matched!.id; // ✅ id 반환
     } else {
-      this.stateManager.updateGame(g => {
-        g.misses += 1;
-        g.lastMissWordId = matched!.id; //miss 매치된 id
-      });
-
-      game.input.value = "";
-      game.input.focus();
-
       return null;
     }
   }
@@ -83,11 +72,7 @@ export class GameEngine {
       g.words.splice(bottomIdx, 1);
       g.misses += 1;
       g.lastMissWordId = skipped!.id;
-      // gameEngine.markMiss(skipped);
     });
-
-    game.input.value = "";
-    game.input.focus();
 
     return skipped.id; //skip된 id반환
   }
@@ -118,57 +103,22 @@ export class GameEngine {
     const reachedBottom = areaHeight - WORD_BOTTOM_OFFSET;
 
     for (const word of game.words) {
-      // 속도 계산 수정 (1000으로 나누기)
       word.y += (word.speed * delta) / SPEED_CONVERSION_FACTOR;
 
-      if (word.y >= reachedBottom) {
-        this.markMiss(word.id);
-        continue;
+      if (word.y >= reachedBottom && !word.missed) {
+        // 바닥에 닿았지만 아직 missed 표시 안됨 -> 첫 감지
+        word.missed = true; // 플래그 설정 (중복 miss 방지)
+        this.stateManager.updateGame(g => {
+          g.misses += 1;
+          g.lastMissWordId = word.id; // 👈 이펙트를 위한 id 설정
+        });
       }
 
-      // this.renderer.updateWordPosition(word);
       remaining.push(word);
     }
 
     this.stateManager.updateGame(g => {
       g.words = remaining;
-    });
-
-    // Skip 버튼 활성화/비활성화
-    // this.updateSkipButton();
-  }
-
-  // // Skip 버튼 상태 업데이트
-  // public updateSkipButton(): void {
-  //   const game = this.stateManager.snapshot.game;
-  //   if (!game) return;
-
-  //   this.renderer.updateSkipButton(game.skipButton, game.words.length > 0);
-  // }
-
-  // 놓친 단어 처리
-  private markMiss(wordId: string): void {
-    // if (!this.stateManager.snapshot.game || !word || word.missed) return;
-
-    // word.missed = true;
-    // this.renderer.showMissEffect(word.element);
-
-    // this.stateManager.updateGame(g => {
-    //   g.misses += 1;
-    // });
-    // this.updateAccuracy(); // 이미 game-logic.ts에 있음
-    const game = this.stateManager.snapshot.game;
-    if (!game) return;
-
-    const word = game.words.find(w => w.id === wordId);
-    if (!word || word.missed) return;
-
-    this.stateManager.updateGame(g => {
-      const w = g.words.find(w => w.id === wordId);
-      if (w) {
-        w.missed = true;
-        g.misses += 1;
-      }
     });
   }
 
@@ -180,22 +130,5 @@ export class GameEngine {
 
     return Math.random() * (max - min) + min;
   }
-
-  // // 점수 표시 업데이트
-  // private updateScore(): void {
-  //   const game = this.stateManager.snapshot.game;
-  //   if (!game) return;
-
-  //   this.renderer.updateScoreDisplay(game.scoreDisplay, game.score);
-  // }
-
-  // // 정확도 표시 업데이트
-  // private updateAccuracy(): void {
-  //   const game = this.stateManager.snapshot.game;
-  //   if (!game) return;
-
-  //   const accuracy = calculateAccuracy(game.hits, game.misses);
-  //   this.renderer.updateAccuracyDisplay(game.accuracyDisplay, accuracy);
-  // }
 }
 export const gameEngine = new GameEngine(stateManager);

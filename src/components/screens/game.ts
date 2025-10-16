@@ -89,12 +89,16 @@ export function renderGameScreen(container: HTMLElement): void {
   typingInput.addEventListener("keydown", event => {
     if (event.key === "Enter") {
       event.preventDefault();
-      gameEngine.submitTypedWord(); //단어 enter
+      gameEngine.submitTypedWord(typingInput.value); //단어 enter
+      typingInput.value = "";
+      typingInput.focus();
     }
   });
 
   skipButton.addEventListener("click", () => {
     gameEngine.skipBottomWord(); //단어 skip
+    typingInput.value = "";
+    typingInput.focus();
   });
 
   typingInput.focus();
