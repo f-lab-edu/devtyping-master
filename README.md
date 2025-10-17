@@ -78,7 +78,6 @@ src/
 │   │   └── game-state.ts       # StateManager 클래스
 │   ├── game/                   # 게임 엔진
 │   │   ├── game-engine.ts      # 단어 생성/매칭/물리 연산
-│   │   ├── game-render.ts      # (사용 안함 - 리팩토링 대상)
 │   │   └── timer.ts            # 타이머/카운트다운/게임 루프
 │   └── constants/              # 게임 설정 상수
 │       └── game-config.ts      # 게임 난이도, 단어 뱅크
@@ -106,11 +105,15 @@ src/
 
 ```typescript
 export class StateManager {
-  private listeners: Array<() => void> = [];      // 화면 전환용
-  private gameListeners: Array<() => void> = [];  // 게임 루프용
+  private listeners: Array<() => void> = []; // 화면 전환용
+  private gameListeners: Array<() => void> = []; // 게임 루프용
 
-  subscribe(fn: () => void) { /* ... */ }        // 화면 전환 시 호출
-  subscribeGame(fn: () => void) { /* ... */ }    // 게임 상태 변경 시 호출
+  subscribe(fn: () => void) {
+    /* ... */
+  } // 화면 전환 시 호출
+  subscribeGame(fn: () => void) {
+    /* ... */
+  } // 게임 상태 변경 시 호출
 }
 ```
 
@@ -121,18 +124,27 @@ export class StateManager {
 ```typescript
 // GameEngine (core/game) - 순수 로직
 class GameEngine {
-  submitTypedWord(inputValue: string): boolean { /* 매칭 로직만 */ }
-  updateWords(delta: number): void { /* 물리 연산만 */ }
+  submitTypedWord(inputValue: string): boolean {
+    /* 매칭 로직만 */
+  }
+  updateWords(delta: number): void {
+    /* 물리 연산만 */
+  }
 }
 
 // GameView (components/ui) - 렌더링만
 class GameView {
-  render(gameState: GameState): void { /* DOM 업데이트만 */ }
-  showHitEffect(wordId: string): void { /* 애니메이션만 */ }
+  render(gameState: GameState): void {
+    /* DOM 업데이트만 */
+  }
+  showHitEffect(wordId: string): void {
+    /* 애니메이션만 */
+  }
 }
 ```
 
 **장점**:
+
 - ✅ 테스트 용이 (로직과 DOM 분리)
 - ✅ 재사용성 향상
 - ✅ 단일 책임 원칙 준수
@@ -154,6 +166,7 @@ render(gameState) {
 ```
 
 **애니메이션**:
+
 - `hit`: 확대 → 축소 (180ms, scale 효과)
 - `miss`: 좌우 흔들림 (240ms, shake 효과)
 
@@ -177,6 +190,7 @@ private gameLoop(now: number): void {
 ```
 
 **특징**:
+
 - 60fps 유지
 - 디바이스 리프레시 레이트에 맞춰 실행
 - delta time 기반 물리 연산 (속도 = pixel/s)
@@ -295,45 +309,14 @@ interface GameState {
 
 ### 현재 아키텍처 이슈
 
-1. **GameState에 DOM 참조 저장** (game.types.ts:22-31)
-   - `input`, `area`, `timerDisplay` 등을 state에 저장 중
-   - 컴포넌트 레벨에서 관리하도록 수정 예정
+**GameState에 DOM 참조 저장** (game.types.ts:22-31)
 
-2. **game-render.ts 미사용**
-   - GameView로 통합 완료, 삭제 예정
-
-3. **timer.ts의 DOM 조작** (timer.ts:115)
-   - `timerDisplay.textContent` 직접 수정
-   - State에 `remainingTime` 저장하고 GameView에서 렌더링하도록 변경 예정
+- `input`, `area`, `timerDisplay` 등을 state에 저장 중
+- 컴포넌트 레벨에서 관리하도록 수정 예정
 
 ## 🎯 향후 개선 계획
 
 ### 기능
+
 - [ ] 난이도 선택 (Easy/Normal/Hard)
-- [ ] 콤보 시스템 (연속 정답 보너스)
 - [ ] 로컬 스토리지로 최고 점수 저장
-- [ ] WPM (Words Per Minute) 계산
-- [ ] 사운드 효과 추가
-
-### 아키텍처
-- [ ] GameState에서 DOM 참조 제거
-- [ ] game-render.ts 삭제
-- [ ] timer.ts DOM 조작 제거
-- [ ] 의존성 주입 패턴 적용
-
-### UI/UX
-- [ ] 다크모드 지원
-- [ ] 반응형 디자인 개선
-- [ ] 키보드 단축키 추가
-
-## 📖 학습 자료
-
-자세한 학습 내용은 [LEARNING.md](LEARNING.md)를 참고하세요.
-
-## 🤝 기여
-
-이슈와 PR은 언제나 환영합니다!
-
-## 📝 라이선스
-
-MIT License

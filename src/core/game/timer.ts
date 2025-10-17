@@ -1,4 +1,4 @@
-﻿import { COUNTDOWN_START } from "../constants";
+﻿import { COUNTDOWN_START, SPEED_CONVERSION_FACTOR, WORD_SPAWN_INTERVAL_MS } from "../constants";
 import { stateManager, StateManager } from "../state";
 import { gameEngine, GameEngine } from "./game-engine";
 
@@ -10,7 +10,7 @@ export class GameTimer {
 
   constructor(private stateManager: StateManager, private gameEngine: GameEngine) {}
 
-  // ===== Public Methods =====
+  // ===== COUNTDOWN Methods =====
   // 카운트다운 시작
   public startCountdown(): void {
     this.clearCountdownTimer();
@@ -25,19 +25,21 @@ export class GameTimer {
         this.clearCountdownTimer();
         this.stateManager.setView("game");
       }
-    }, 1000);
+    }, SPEED_CONVERSION_FACTOR);
   }
+
+  // ===== GAME Methods =====
   //단어 생성기 시작
   public startSpawningWords(): void {
     this.clearSpawnTimer(); //중복방지
     this.gameEngine.spawnWord();
-    this.spawnId = setInterval(() => this.gameEngine.spawnWord(), 2000);
+    this.spawnId = setInterval(() => this.gameEngine.spawnWord(), WORD_SPAWN_INTERVAL_MS);
   }
 
   //단어 루프 애니메이션
   public startGameLoop(): void {
     this.lastFrame = performance.now();
-    this.animationId = requestAnimationFrame(this.gameLoop.bind(this));
+    this.animationId = requestAnimationFrame(this.gameLoop); //this를 강제로 고정
   }
 
   // 모든 타이머 정리
@@ -88,7 +90,7 @@ export class GameTimer {
     }
   }
 
-  private gameLoop(now: number): void {
+  private gameLoop = (now: number): void => {
     if (!this.stateManager.snapshot.game?.running) {
       return;
     }
@@ -104,8 +106,8 @@ export class GameTimer {
       return;
     }
 
-    this.animationId = requestAnimationFrame(this.gameLoop.bind(this));
-  }
+    this.animationId = requestAnimationFrame(this.gameLoop);
+  };
 
   // 타이머 표시 업데이트
   private updateTimer(now: number): void {
