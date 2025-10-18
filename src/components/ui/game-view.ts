@@ -1,6 +1,9 @@
 import type { GameState, WordState } from "../../types";
 import { calculateAccuracy } from "../../utils";
-import { HIT_ANIMATION_DURATION, MISS_ANIMATION_DURATION } from "../../core/constants";
+import {
+  HIT_ANIMATION_DURATION,
+  MISS_ANIMATION_DURATION,
+} from "../../core/constants";
 
 export class GameView {
   //id와 element로 구성된 wordElements배열
@@ -14,17 +17,23 @@ export class GameView {
     private scoreDisplay: HTMLElement,
     private accuracyDisplay: HTMLElement,
     private skipButton: HTMLButtonElement,
-    private timerDisplay: HTMLElement,
+    private timerDisplay: HTMLElement
   ) {}
 
   // ===== 메인 렌더링 메서드 =====
   public render(gameState: GameState): void {
-    if (gameState.lastHitWordId && gameState.lastHitWordId !== this.lastProcessedHitId) {
+    if (
+      gameState.lastHitWordId &&
+      gameState.lastHitWordId !== this.lastProcessedHitId
+    ) {
       this.showHitEffect(gameState.lastHitWordId);
       this.lastProcessedHitId = gameState.lastHitWordId;
     }
 
-    if (gameState.lastMissWordId && gameState.lastMissWordId !== this.lastProcessedMissId) {
+    if (
+      gameState.lastMissWordId &&
+      gameState.lastMissWordId !== this.lastProcessedMissId
+    ) {
       this.showMissEffect(gameState.lastMissWordId);
       this.lastProcessedMissId = gameState.lastMissWordId;
     }
@@ -35,14 +44,18 @@ export class GameView {
 
   //단어 동기화 :: words에서 slice된 단어 필터링해서 element 에서 삭제
   public syncWords(words: WordState[]): void {
-    const currentIds = new Set(words.map(w => w.id));
+    const currentIds = new Set(words.map((w) => w.id));
 
     //words에 id가 없으면 제거
     for (const [id, element] of this.wordElements) {
       if (!currentIds.has(id)) {
         // 이펙트 처리 중인 element는 보호
-        if (element.classList.contains("hit") || element.classList.contains("miss")) {
-          continue; // setTimeout이 삭제할 거예요
+        if (
+          element.classList.contains("hit") ||
+          element.classList.contains("miss")
+        ) {
+          this.wordElements.delete(id);
+          continue; // setTimeout이 삭제할 거예요 - 근데 setTimeout 동작하는 동안 skip이 동작 안함
         }
         element.remove();
         this.wordElements.delete(id);
@@ -84,9 +97,9 @@ export class GameView {
     if (!element) return;
 
     element.classList.add("hit");
+    this.wordElements.delete(wordId);
     setTimeout(() => {
       element.remove();
-      this.wordElements.delete(wordId);
     }, HIT_ANIMATION_DURATION);
   }
   //단어오류
@@ -95,9 +108,9 @@ export class GameView {
     if (!element) return;
 
     element.classList.add("miss");
+    this.wordElements.delete(wordId);
     setTimeout(() => {
       element.remove();
-      this.wordElements.delete(wordId);
     }, MISS_ANIMATION_DURATION);
   }
 
