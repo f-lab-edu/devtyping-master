@@ -1,5 +1,6 @@
 import type { GameState, WordState } from "../../types";
 import { calculateAccuracy } from "../../utils";
+import { HIT_ANIMATION_DURATION, MISS_ANIMATION_DURATION } from "../../core/constants";
 
 export class GameView {
   //id와 element로 구성된 wordElements배열
@@ -86,7 +87,7 @@ export class GameView {
     setTimeout(() => {
       element.remove();
       this.wordElements.delete(wordId);
-    }, 180);
+    }, HIT_ANIMATION_DURATION);
   }
   //단어오류
   public showMissEffect(wordId: string): void {
@@ -97,7 +98,7 @@ export class GameView {
     setTimeout(() => {
       element.remove();
       this.wordElements.delete(wordId);
-    }, 240);
+    }, MISS_ANIMATION_DURATION);
   }
 
   private updateUI(gameState: GameState): void {

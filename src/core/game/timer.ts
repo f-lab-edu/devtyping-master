@@ -1,4 +1,4 @@
-﻿import { COUNTDOWN_START, SPEED_CONVERSION_FACTOR, WORD_SPAWN_INTERVAL_MS } from "../constants";
+﻿import { COUNTDOWN_START, SPEED_CONVERSION_FACTOR, WORD_SPAWN_INTERVAL_MS, TIMER_DISPLAY_PRECISION, TIMER_DECIMAL_PLACES } from "../constants";
 import { stateManager, StateManager } from "../state";
 import { gameEngine, GameEngine } from "./game-engine";
 
@@ -114,7 +114,7 @@ export class GameTimer {
     const game = this.stateManager.snapshot.game;
     if (!game?.running) return;
 
-    const remaining = Math.max(0, Math.round((game.endsAt - now) / 100) / 10);
+    const remaining = Math.max(0, Math.round((game.endsAt - now) / TIMER_DISPLAY_PRECISION) / TIMER_DECIMAL_PLACES);
 
     this.stateManager.updateGame(g => {
       g.remainingTime = remaining;
