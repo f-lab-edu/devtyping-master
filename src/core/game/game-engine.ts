@@ -1,6 +1,18 @@
 import { StateManager, stateManager } from "../state";
 import type { WordState } from "../../types";
-import { SPEED_CONVERSION_FACTOR, WORD_BANK, WORD_BOTTOM_OFFSET, WORD_SPEED_RANGE } from "../constants";
+import {
+  SPEED_CONVERSION_FACTOR,
+  WORD_BANK,
+  WORD_BOTTOM_OFFSET,
+  WORD_SPEED_RANGE,
+  WORD_WIDTH_PER_CHAR,
+  WORD_BASE_PADDING,
+  WORD_SPAWN_PADDING,
+  WORD_SPAWN_Y,
+  POINTS_PER_WORD,
+  RANDOM_ID_SLICE_START,
+  RANDOM_ID_SLICE_END,
+} from "../constants";
 
 //dom 요소 없이 로직만
 export class GameEngine {
@@ -17,18 +29,17 @@ export class GameEngine {
     const areaWidth = game.area.clientWidth;
 
     // 텍스트 길이에 따라 대략적인 너비 계산
-    const estimatedWordWidth = text.length * 12 + 40;
-    const padding = 20;
+    const estimatedWordWidth = text.length * WORD_WIDTH_PER_CHAR + WORD_BASE_PADDING;
 
-    const minX = padding;
-    const maxX = Math.max(minX, areaWidth - estimatedWordWidth - padding);
+    const minX = WORD_SPAWN_PADDING;
+    const maxX = Math.max(minX, areaWidth - estimatedWordWidth - WORD_SPAWN_PADDING);
     const x = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
 
     const wordState: WordState = {
       id: this.generateWordId(),
       text,
       x,
-      y: -40,
+      y: WORD_SPAWN_Y,
       speed: this.getRandomSpeed(),
       missed: false,
     };
@@ -48,7 +59,7 @@ export class GameEngine {
       const matched = game.words[matchIndex];
       this.stateManager.updateGame(g => {
         g.words.splice(matchIndex, 1); //단어가 배열에서 사라져서 match된 단어가 어떤건지 알 수 없음
-        g.score += 10;
+        g.score += POINTS_PER_WORD;
         g.hits += 1;
         g.lastHitWordId = matched!.id; //hit 매치된 id
       });
@@ -123,7 +134,7 @@ export class GameEngine {
   }
 
   private generateWordId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    return Date.now().toString(36) + Math.random().toString(36).slice(RANDOM_ID_SLICE_START, RANDOM_ID_SLICE_END);
   }
   private getRandomSpeed(): number {
     const [min, max] = WORD_SPEED_RANGE;
