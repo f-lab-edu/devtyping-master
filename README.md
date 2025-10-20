@@ -37,13 +37,19 @@
 
 ## 🚀 시작하기
 
-### 설치
+### 🌐 온라인 플레이
+
+**배포 URL**: [https://devtyping-master.vercel.app/](https://devtyping-master.vercel.app/)
+
+### 로컬 개발
+
+**설치**
 
 ```bash
 npm install
 ```
 
-### 개발 서버 실행
+**개발 서버 실행**
 
 ```bash
 npm run dev
@@ -51,7 +57,7 @@ npm run dev
 
 → http://127.0.0.1:5173 접속
 
-### 프로덕션 빌드
+**프로덕션 빌드**
 
 ```bash
 npm run build
