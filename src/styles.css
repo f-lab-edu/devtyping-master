@@ -135,11 +135,7 @@ button:disabled {
   height: 320px;
   border-radius: 14px;
   border: 1px solid rgba(148, 163, 184, 0.25);
-  background: linear-gradient(
-    160deg,
-    rgba(30, 41, 59, 0.9),
-    rgba(15, 23, 42, 0.85)
-  );
+  background: linear-gradient(160deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.85));
   overflow: hidden;
 }
 
@@ -269,4 +265,41 @@ button:disabled {
 }
 #name-form button {
   margin-top: 20px;
+}
+
+.difficulty-section {
+  margin: 20px 0;
+}
+
+.difficulty-section label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.difficulty-btn {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #4a90e2;
+  background-color: white;
+  color: #4a90e2;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.difficulty-btn:hover {
+  background-color: #f0f8ff;
+}
+
+.difficulty-btn.active {
+  background-color: #4a90e2;
+  color: white;
 }

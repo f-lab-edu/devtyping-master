@@ -1,4 +1,4 @@
-import type { AppState, GameState } from "../../types";
+import type { AppState, Difficulty, GameState } from "../../types";
 import { COUNTDOWN_START } from "../constants";
 
 export class StateManager {
@@ -10,6 +10,7 @@ export class StateManager {
     this.state = {
       view: "name", //현재 화면상태
       playerName: "",
+      difficulty: "normal",
       countdownValue: COUNTDOWN_START,
       game: null,
       result: null,
@@ -46,6 +47,10 @@ export class StateManager {
   // 상태 업데이트 함수들
   setPlayerName(name: string): void {
     this.state.playerName = name;
+  }
+
+  setDifficulty(difficulty: Difficulty): void {
+    this.state.difficulty = difficulty;
   }
 
   setView(view: AppState["view"]): void {

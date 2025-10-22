@@ -9,6 +9,13 @@ export const CLEAR_SCORE: number = 120;
 export const POINTS_PER_WORD: number = 10;
 export const WORD_SPEED_RANGE: [number, number] = [70, 120];
 
+// 난이도별 속도 범위
+export const DIFFICULTY_SPEED_RANGES: Record<"easy" | "normal" | "hard", [number, number]> = {
+  easy: [40, 70], // 느림
+  normal: [70, 120], // 기본 (기존 설정)
+  hard: [120, 180], // 빠름
+};
+
 // 레이아웃 및 위치
 export const WORD_SPAWN_Y = -40;
 export const WORD_BOTTOM_OFFSET = 34;

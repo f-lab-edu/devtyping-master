@@ -12,6 +12,7 @@ import {
   POINTS_PER_WORD,
   RANDOM_ID_SLICE_START,
   RANDOM_ID_SLICE_END,
+  DIFFICULTY_SPEED_RANGES,
 } from "../constants";
 
 //dom 요소 없이 로직만
@@ -137,7 +138,11 @@ export class GameEngine {
     return Date.now().toString(36) + Math.random().toString(36).slice(RANDOM_ID_SLICE_START, RANDOM_ID_SLICE_END);
   }
   private getRandomSpeed(): number {
-    const [min, max] = WORD_SPEED_RANGE;
+    // const game = this.stateManager.snapshot.game;
+    // if (!game) return;
+    const wordSpeed = this.stateManager.snapshot.difficulty;
+    // const [min, max] = WORD_SPEED_RANGE[wordSpeed];
+    const [min, max] = DIFFICULTY_SPEED_RANGES[wordSpeed];
 
     return Math.random() * (max - min) + min;
   }

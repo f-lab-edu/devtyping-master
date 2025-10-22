@@ -31,8 +31,11 @@ export interface GameState {
   skipButton: HTMLButtonElement;
   running: boolean;
 }
+
+export type Difficulty = "easy" | "normal" | "hard";
 export interface AppState {
   view: "name" | "countdown" | "game" | "result";
+  difficulty: Difficulty;
   playerName: string;
   countdownValue: number;
   game: GameState | null;
