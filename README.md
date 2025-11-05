@@ -2,6 +2,12 @@
 
 > TypeScript 기반 타이핑 게임 - 관심사 분리와 상태 관리 학습 프로젝트
 
+## 🌐 데모
+
+**배포 URL**: [https://devtyping-master.vercel.app/](https://devtyping-master.vercel.app/)
+
+<!-- TODO: 게임 플레이 스크린샷 추가 -->
+
 ## 📌 프로젝트 소개
 
 떨어지는 프로그래밍 용어를 빠르게 타이핑하여 점수를 획득하는 웹 게임입니다.
@@ -15,6 +21,7 @@
 - ✅ 뷰-로직 분리 (GameEngine + GameView)
 - ✅ CSS 애니메이션과 DOM 최적화
 - ✅ TypeScript Strict 모드 적용
+- ✅ 반응형 웹 디자인 (모바일/태블릿/데스크톱)
 
 ## 🎮 게임 방법
 
@@ -36,10 +43,6 @@
 - 정확도 = hits / (hits + misses) × 100%
 
 ## 🚀 시작하기
-
-### 🌐 온라인 플레이
-
-**배포 URL**: [https://devtyping-master.vercel.app/](https://devtyping-master.vercel.app/)
 
 ### 로컬 개발
 
@@ -67,9 +70,10 @@ npm run build
 
 - **언어**: TypeScript (Strict Mode)
 - **런타임**: Browser (ES Module)
-- **스타일**: Vanilla CSS + CSS Animations
+- **스타일**: Vanilla CSS + CSS Animations + 반응형 디자인
 - **상태 관리**: 자체 구현 StateManager (Observer Pattern)
 - **아키텍처**: Layered Architecture (Core-Components-Utils)
+- **반응형**: 모바일, 태블릿, 데스크톱 모두 지원
 
 ## 📁 프로젝트 구조
 
@@ -320,9 +324,24 @@ interface GameState {
 - `input`, `area`, `timerDisplay` 등을 state에 저장 중
 - 컴포넌트 레벨에서 관리하도록 수정 예정
 
+## 🎯 구현 완료 기능
+
+### 핵심 기능
+- ✅ 난이도 선택 (Easy/Normal/Hard)
+- ✅ 로컬 스토리지 기반 랭킹 시스템 (상위 10명)
+- ✅ 개인 최고 기록 추적
+- ✅ 오답 시 화면 효과 및 점수 페널티 (-5점)
+- ✅ 반응형 디자인 (모바일, 태블릿, 데스크톱)
+- ✅ SEO 최적화 (메타 태그, OpenGraph, favicon)
+
+### 반응형 지원
+- **데스크톱** (768px+): 전체 기능, 최적의 UI/UX
+- **태블릿** (480px - 768px): 조정된 레이아웃, 터치 최적화
+- **모바일** (360px - 480px): 단일 컬럼 레이아웃, 간소화된 UI
+- **가로 모드**: 별도 최적화 (높이 제한 대응)
+
 ## 🎯 향후 개선 계획
 
 ### 기능
-
-- [ ] 난이도 선택 (Easy/Normal/Hard)
-- [ ] 로컬 스토리지로 최고 점수 저장
+- [ ] 멀티플레이어 모드
+- [ ] 다국어 지원 (영어, 일본어)

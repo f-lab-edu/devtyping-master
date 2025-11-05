@@ -49,6 +49,7 @@ export function renderNameScreen(container: HTMLElement): void {
     const btn = createButton(label);
     btn.className = value === "normal" ? "difficulty-btn active" : "difficulty-btn";
     btn.type = "button";
+    btn.setAttribute("data-difficulty", value);
     btn.addEventListener("click", () => {
       buttonGroup.querySelectorAll(".difficulty-btn").forEach(b => {
         b.classList.remove("active");

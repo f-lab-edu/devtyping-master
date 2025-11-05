@@ -33,6 +33,15 @@ export interface GameState {
 }
 
 export type Difficulty = "easy" | "normal" | "hard";
+
+export interface ScoreRecord {
+  playerName: string;
+  score: number;
+  accuracy: number;
+  difficulty: Difficulty;
+  timestamp: number;
+}
+
 export interface AppState {
   view: "name" | "countdown" | "game" | "result";
   difficulty: Difficulty;

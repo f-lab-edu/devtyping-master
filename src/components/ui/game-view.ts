@@ -8,6 +8,7 @@ import {
 export class GameView {
   //id와 element로 구성된 wordElements배열
   private wordElements: Map<string, HTMLDivElement> = new Map();
+  private animationTimeouts: Set<ReturnType<typeof setTimeout>> = new Set();
 
   private lastProcessedHitId: string | null = null;
   private lastProcessedMissId: string | null = null;
@@ -49,13 +50,13 @@ export class GameView {
     //words에 id가 없으면 제거
     for (const [id, element] of this.wordElements) {
       if (!currentIds.has(id)) {
-        // 이펙트 처리 중인 element는 보호
+        // 이펙트 처리 중인 element는 애니메이션 완료 후 제거됨
         if (
           element.classList.contains("hit") ||
           element.classList.contains("miss")
         ) {
           this.wordElements.delete(id);
-          continue; // setTimeout이 삭제할 거예요 - 근데 setTimeout 동작하는 동안 skip이 동작 안함
+          continue;
         }
         element.remove();
         this.wordElements.delete(id);
@@ -98,9 +99,13 @@ export class GameView {
 
     element.classList.add("hit");
     this.wordElements.delete(wordId);
-    setTimeout(() => {
+
+    const timeoutId = setTimeout(() => {
       element.remove();
+      this.animationTimeouts.delete(timeoutId);
     }, HIT_ANIMATION_DURATION);
+
+    this.animationTimeouts.add(timeoutId);
   }
   //단어오류
   public showMissEffect(wordId: string): void {
@@ -109,9 +114,13 @@ export class GameView {
 
     element.classList.add("miss");
     this.wordElements.delete(wordId);
-    setTimeout(() => {
+
+    const timeoutId = setTimeout(() => {
       element.remove();
+      this.animationTimeouts.delete(timeoutId);
     }, MISS_ANIMATION_DURATION);
+
+    this.animationTimeouts.add(timeoutId);
   }
 
   private updateUI(gameState: GameState): void {
@@ -128,6 +137,13 @@ export class GameView {
 
   //클린업 함수
   public cleanUp(): void {
+    // 모든 대기 중인 애니메이션 타임아웃 클리어
+    for (const timeoutId of this.animationTimeouts) {
+      clearTimeout(timeoutId);
+    }
+    this.animationTimeouts.clear();
+
+    // 모든 DOM 요소 제거
     for (const element of this.wordElements.values()) {
       element.remove();
     }

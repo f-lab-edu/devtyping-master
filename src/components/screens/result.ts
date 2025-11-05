@@ -1,18 +1,30 @@
 import { gameTimer } from "../../core/game";
 import { stateManager } from "../../core/state";
-import { calculateAccuracy, getGameOutcome } from "../../utils";
+import { calculateAccuracy, getGameOutcome, saveScore, getRankings, getPersonalBest } from "../../utils";
 import { createResultRow } from "../ui";
 
 export function renderResultScreen(container: HTMLElement): void {
-  const { result, playerName } = stateManager.snapshot;
+  const { result, playerName, difficulty } = stateManager.snapshot;
   container.innerHTML = "";
+
+  if (!result) return;
+
+  // 점수 저장
+  const accuracyValue = calculateAccuracy(result.hits, result.misses);
+  saveScore({
+    playerName,
+    score: result.score,
+    accuracy: accuracyValue,
+    difficulty,
+    timestamp: Date.now(),
+  });
 
   const card = document.createElement("div");
   card.className = "main-card screen";
 
   const outcomeBadge = document.createElement("div");
   outcomeBadge.className = "badge";
-  const outcome = getGameOutcome(result!.score);
+  const outcome = getGameOutcome(result.score);
   outcomeBadge.textContent = outcome;
 
   const title = document.createElement("h1");
@@ -24,16 +36,20 @@ export function renderResultScreen(container: HTMLElement): void {
 
   const resultScore = document.createElement("div");
   resultScore.className = "result-score";
-  resultScore.textContent = result!.score + "점";
+  resultScore.textContent = result.score + "점";
 
   const details = document.createElement("div");
   details.className = "result-details";
 
-  const accuracyValue = calculateAccuracy(result!.hits, result!.misses);
-
-  details.appendChild(createResultRow("정확히 친 단어", result!.hits + " 개"));
-  details.appendChild(createResultRow("놓친 단어", result!.misses + " 개"));
+  details.appendChild(createResultRow("정확히 친 단어", result.hits + " 개"));
+  details.appendChild(createResultRow("놓친 단어", result.misses + " 개"));
   details.appendChild(createResultRow("정확도", accuracyValue + "%"));
+
+  // 개인 최고 기록 표시
+  const personalBest = getPersonalBest(playerName);
+  if (personalBest && personalBest.score !== result.score) {
+    details.appendChild(createResultRow("개인 최고 기록", personalBest.score + "점"));
+  }
 
   const retryButton = document.createElement("button");
   retryButton.id = "retry-button";
@@ -54,13 +70,59 @@ export function renderResultScreen(container: HTMLElement): void {
   card.appendChild(renameButton);
   container.appendChild(card);
 
+  // 랭킹 표시
+  const rankings = getRankings();
+  if (rankings.length > 0) {
+    const rankingCard = document.createElement("div");
+    rankingCard.className = "main-card ranking-card";
+
+    const rankingTitle = document.createElement("h2");
+    rankingTitle.textContent = "🏆 명예의 전당";
+    rankingCard.appendChild(rankingTitle);
+
+    const rankingList = document.createElement("div");
+    rankingList.className = "ranking-list";
+
+    rankings.forEach((record, index) => {
+      const rankItem = document.createElement("div");
+      rankItem.className = `ranking-item ${record.playerName === playerName && record.score === result.score && record.timestamp === Date.now() ? "current" : ""}`;
+
+      const rank = document.createElement("span");
+      rank.className = "rank";
+      rank.textContent = `${index + 1}위`;
+
+      const name = document.createElement("span");
+      name.className = "player-name";
+      name.textContent = record.playerName;
+
+      const scoreSpan = document.createElement("span");
+      scoreSpan.className = "score";
+      scoreSpan.textContent = `${record.score}점`;
+
+      const difficultyBadge = document.createElement("span");
+      difficultyBadge.className = `difficulty-badge ${record.difficulty}`;
+      difficultyBadge.textContent = record.difficulty.toUpperCase();
+
+      rankItem.appendChild(rank);
+      rankItem.appendChild(name);
+      rankItem.appendChild(difficultyBadge);
+      rankItem.appendChild(scoreSpan);
+      rankingList.appendChild(rankItem);
+    });
+
+    rankingCard.appendChild(rankingList);
+    container.appendChild(rankingCard);
+  }
+
   retryButton.addEventListener("click", () => {
-    stateManager.resetGameState({ resetName: false });
+    gameTimer.clearAllTimers();
+    stateManager.resetGameState(false);
     gameTimer.startCountdown();
   });
 
   renameButton.addEventListener("click", () => {
-    stateManager.resetGameState({ resetName: true });
+    gameTimer.clearAllTimers();
+    stateManager.resetGameState(true);
     stateManager.setView("name");
   });
 }

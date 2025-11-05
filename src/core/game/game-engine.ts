@@ -4,7 +4,6 @@ import {
   SPEED_CONVERSION_FACTOR,
   WORD_BANK,
   WORD_BOTTOM_OFFSET,
-  WORD_SPEED_RANGE,
   WORD_WIDTH_PER_CHAR,
   WORD_BASE_PADDING,
   WORD_SPAWN_PADDING,
@@ -48,26 +47,34 @@ export class GameEngine {
     this.stateManager.updateGame(g => g.words.push(wordState));
   }
 
-  public submitTypedWord(inputValue: string): string | null {
+  public submitTypedWord(inputValue: string): { success: boolean; wordId?: string } {
     const game = this.stateManager.snapshot.game;
-    if (!game?.running) return null;
+    if (!game?.running) return { success: false };
 
     const value = inputValue.trim();
-    if (!value) return null;
+    if (!value) return { success: false };
 
     const matchIndex = game.words.findIndex(word => word.text === value);
     if (matchIndex >= 0) {
       const matched = game.words[matchIndex];
+      if (!matched) return { success: false };
+
+      const matchedId = matched.id;
       this.stateManager.updateGame(g => {
-        g.words.splice(matchIndex, 1); //단어가 배열에서 사라져서 match된 단어가 어떤건지 알 수 없음
+        g.words.splice(matchIndex, 1);
         g.score += POINTS_PER_WORD;
         g.hits += 1;
-        g.lastHitWordId = matched!.id; //hit 매치된 id
+        g.lastHitWordId = matchedId;
       });
 
-      return matched!.id; // ✅ id 반환
+      return { success: true, wordId: matchedId };
     } else {
-      return null;
+      // 오기입 처리
+      this.stateManager.updateGame(g => {
+        g.misses += 1;
+        g.score = Math.max(0, g.score - 5); // 5점 감점
+      });
+      return { success: false };
     }
   }
 
@@ -80,13 +87,14 @@ export class GameEngine {
     const skipped = game.words[bottomIdx];
     if (!skipped) return null;
 
+    const skippedId = skipped.id;
     this.stateManager.updateGame(g => {
       g.words.splice(bottomIdx, 1);
       g.misses += 1;
-      g.lastMissWordId = skipped!.id;
+      g.lastMissWordId = skippedId;
     });
 
-    return skipped.id; //skip된 id반환
+    return skippedId;
   }
 
   // 바닥에 가장 가까운 단어의 인덱스 찾기
@@ -94,7 +102,10 @@ export class GameEngine {
     if (words.length === 0) return -1;
 
     let bottomIdx = 0;
-    let maxY = words[0]!.y;
+    const firstWord = words[0];
+    if (!firstWord) return -1;
+
+    let maxY = firstWord.y;
     for (let i = 1; i < words.length; i++) {
       const word = words[i];
       if (word && word.y > maxY) {
