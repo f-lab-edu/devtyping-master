@@ -64,7 +64,7 @@ export class GameEngine {
         g.words.splice(matchIndex, 1);
         g.score += POINTS_PER_WORD;
         g.hits += 1;
-        g.lastHitWordId = matchedId;
+        g.lastHitWordId.push(matchedId);
       });
 
       return { success: true, wordId: matchedId };
@@ -91,7 +91,7 @@ export class GameEngine {
     this.stateManager.updateGame(g => {
       g.words.splice(bottomIdx, 1);
       g.misses += 1;
-      g.lastMissWordId = skippedId;
+      g.lastMissWordId.push(skippedId);
     });
 
     return skippedId;
@@ -133,7 +133,7 @@ export class GameEngine {
         word.missed = true; // 플래그 설정 (중복 miss 방지)
         this.stateManager.updateGame(g => {
           g.misses += 1;
-          g.lastMissWordId = word.id; // 👈 이펙트를 위한 id 설정
+          g.lastMissWordId.push(word.id); // 👈 이펙트를 위한 id 설정
         });
       }
 

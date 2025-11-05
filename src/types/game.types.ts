@@ -21,8 +21,8 @@ export interface GameState {
   words: WordState[];
   area: HTMLDivElement;
   remainingTime: number;
-  lastHitWordId: string | null; //맞춘단어
-  lastMissWordId: string | null; // 놓친단어
+  lastHitWordId: string[];
+  lastMissWordId: string[];
 
   input: HTMLInputElement;
   timerDisplay: HTMLElement;

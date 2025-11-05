@@ -1,9 +1,6 @@
 import type { GameState, WordState } from "../../types";
 import { calculateAccuracy } from "../../utils";
-import {
-  HIT_ANIMATION_DURATION,
-  MISS_ANIMATION_DURATION,
-} from "../../core/constants";
+import { HIT_ANIMATION_DURATION, MISS_ANIMATION_DURATION } from "../../core/constants";
 
 export class GameView {
   //id와 element로 구성된 wordElements배열
@@ -18,25 +15,25 @@ export class GameView {
     private scoreDisplay: HTMLElement,
     private accuracyDisplay: HTMLElement,
     private skipButton: HTMLButtonElement,
-    private timerDisplay: HTMLElement
+    private timerDisplay: HTMLElement,
   ) {}
 
   // ===== 메인 렌더링 메서드 =====
   public render(gameState: GameState): void {
-    if (
-      gameState.lastHitWordId &&
-      gameState.lastHitWordId !== this.lastProcessedHitId
-    ) {
-      this.showHitEffect(gameState.lastHitWordId);
-      this.lastProcessedHitId = gameState.lastHitWordId;
+    // ✅ 배열의 모든 hit을 처리
+    for (const wordId of gameState.lastHitWordId) {
+      if (wordId !== this.lastProcessedHitId) {
+        this.showHitEffect(wordId);
+        this.lastProcessedHitId = wordId;
+      }
     }
 
-    if (
-      gameState.lastMissWordId &&
-      gameState.lastMissWordId !== this.lastProcessedMissId
-    ) {
-      this.showMissEffect(gameState.lastMissWordId);
-      this.lastProcessedMissId = gameState.lastMissWordId;
+    // ✅ 배열의 모든 miss를 처리
+    for (const wordId of gameState.lastMissWordId) {
+      if (wordId !== this.lastProcessedMissId) {
+        this.showMissEffect(wordId);
+        this.lastProcessedMissId = wordId;
+      }
     }
 
     this.syncWords(gameState.words);
@@ -45,16 +42,13 @@ export class GameView {
 
   //단어 동기화 :: words에서 slice된 단어 필터링해서 element 에서 삭제
   public syncWords(words: WordState[]): void {
-    const currentIds = new Set(words.map((w) => w.id));
+    const currentIds = new Set(words.map(w => w.id));
 
     //words에 id가 없으면 제거
     for (const [id, element] of this.wordElements) {
       if (!currentIds.has(id)) {
         // 이펙트 처리 중인 element는 애니메이션 완료 후 제거됨
-        if (
-          element.classList.contains("hit") ||
-          element.classList.contains("miss")
-        ) {
+        if (element.classList.contains("hit") || element.classList.contains("miss")) {
           this.wordElements.delete(id);
           continue;
         }
