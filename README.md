@@ -70,8 +70,10 @@ npm run build
 
 - **언어**: TypeScript (Strict Mode)
 - **런타임**: Browser (ES Module)
-- **스타일**: Vanilla CSS + CSS Animations + 반응형 디자인
+- **빌드 도구**: Vite
+- **스타일**: SASS (변수, 믹스인, 중첩) + CSS Animations + 반응형 디자인
 - **상태 관리**: 자체 구현 StateManager (Observer Pattern)
+- **저장소**: LocalStorage API (랭킹 시스템)
 - **아키텍처**: Layered Architecture (Core-Components-Utils)
 - **반응형**: 모바일, 태블릿, 데스크톱 모두 지원
 
@@ -81,7 +83,7 @@ npm run build
 src/
 ├── app.ts                      # 애플리케이션 진입점 + 라우터
 ├── index.html                  # HTML 템플릿
-├── styles.css                  # 글로벌 스타일 + 애니메이션
+├── styles.scss                 # 글로벌 스타일 + 애니메이션 (SASS)
 │
 ├── core/                       # 핵심 비즈니스 로직 (DOM 독립)
 │   ├── state/                  # 전역 상태 관리
@@ -327,6 +329,7 @@ interface GameState {
 ## 🎯 구현 완료 기능
 
 ### 핵심 기능
+
 - ✅ 난이도 선택 (Easy/Normal/Hard)
 - ✅ 로컬 스토리지 기반 랭킹 시스템 (상위 10명)
 - ✅ 개인 최고 기록 추적
@@ -335,13 +338,8 @@ interface GameState {
 - ✅ SEO 최적화 (메타 태그, OpenGraph, favicon)
 
 ### 반응형 지원
+
 - **데스크톱** (768px+): 전체 기능, 최적의 UI/UX
 - **태블릿** (480px - 768px): 조정된 레이아웃, 터치 최적화
 - **모바일** (360px - 480px): 단일 컬럼 레이아웃, 간소화된 UI
 - **가로 모드**: 별도 최적화 (높이 제한 대응)
-
-## 🎯 향후 개선 계획
-
-### 기능
-- [ ] 멀티플레이어 모드
-- [ ] 다국어 지원 (영어, 일본어)
