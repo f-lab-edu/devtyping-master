@@ -39,7 +39,8 @@
 **점수 시스템**
 
 - 정답: +10점
-- 오답/스킵: 정확도 감소
+- 오답: -5점, 정확도 감소
+- 스킵: 정확도 감소 (점수 페널티 없음)
 - 정확도 = hits / (hits + misses) × 100%
 
 ## 🚀 시작하기
@@ -105,7 +106,8 @@ src/
 │       └── game-view.ts        # 게임 뷰 클래스 (단어 렌더링)
 │
 ├── utils/                      # 유틸리티 함수
-│   └── game-utils.ts           # 정확도 계산 등
+│   ├── game-utils.ts           # 정확도 계산 등
+│   └── storage.ts              # LocalStorage 랭킹 관리
 │
 └── types/                      # TypeScript 타입 정의
     └── game.types.ts           # AppState, GameState, WordState
@@ -223,9 +225,9 @@ interface GameState {
   words: WordState[];
   remainingTime: number;
 
-  // 이펙트 추적
-  lastHitWordId: string | null;
-  lastMissWordId: string | null;
+  // 이펙트 추적 (연속 입력 지원을 위한 배열)
+  lastHitWordId: string[];
+  lastMissWordId: string[];
 
   // DOM 참조 (리팩토링 예정)
   area: HTMLDivElement;
