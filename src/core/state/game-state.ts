@@ -1,4 +1,4 @@
-import type { AppState, GameState } from "../../types";
+import type { AppState, Difficulty, GameState } from "../../types";
 import { COUNTDOWN_START } from "../constants";
 
 export class StateManager {
@@ -10,6 +10,7 @@ export class StateManager {
     this.state = {
       view: "name", //현재 화면상태
       playerName: "",
+      difficulty: "normal",
       countdownValue: COUNTDOWN_START,
       game: null,
       result: null,
@@ -48,6 +49,10 @@ export class StateManager {
     this.state.playerName = name;
   }
 
+  setDifficulty(difficulty: Difficulty): void {
+    this.state.difficulty = difficulty;
+  }
+
   setView(view: AppState["view"]): void {
     this.state.view = view;
     this.notify();
@@ -82,21 +87,7 @@ export class StateManager {
     return this.state.countdownValue;
   }
 
-  resetGameState(options?: {
-    resetName?: boolean;
-    onBeforeClear?: () => void;
-    onClearWords?: (words: GameState["words"]) => void;
-  }): void {
-    const { resetName = false, onBeforeClear, onClearWords } = options ?? {};
-
-    //타이머 초기화
-    onBeforeClear?.();
-
-    // 남은 단어들 DOM에서 제거
-    if (this.state.game?.words) {
-      onClearWords?.(this.state.game.words);
-    }
-
+  resetGameState(resetName: boolean = false): void {
     // 상태 초기화
     this.state.game = null;
     this.state.result = null;
@@ -104,6 +95,7 @@ export class StateManager {
 
     if (resetName) {
       this.state.playerName = "";
+      this.state.difficulty = "normal";
     }
 
     this.notifyGame();

@@ -76,8 +76,8 @@ export function renderGameScreen(container: HTMLElement): void {
     misses: 0,
     words: [],
     remainingTime: 0,
-    lastHitWordId: null,
-    lastMissWordId: null,
+    lastHitWordId: [],
+    lastMissWordId: [],
     area: gameArea,
     input: typingInput,
     skipButton: skipButton,
@@ -90,7 +90,16 @@ export function renderGameScreen(container: HTMLElement): void {
   typingInput.addEventListener("keydown", event => {
     if (event.key === "Enter") {
       event.preventDefault();
-      gameEngine.submitTypedWord(typingInput.value); //단어 enter
+      const result = gameEngine.submitTypedWord(typingInput.value);
+
+      if (!result.success && typingInput.value.trim()) {
+        // 오기입 시 input 필드에 에러 효과
+        typingInput.classList.add("error");
+        setTimeout(() => {
+          typingInput.classList.remove("error");
+        }, 300);
+      }
+
       typingInput.value = "";
       typingInput.focus();
     }

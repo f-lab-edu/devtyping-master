@@ -58,6 +58,19 @@ input[type="text"] {
   background: rgba(15, 23, 42, 0.6);
   color: inherit;
   font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+input[type="text"].error {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
 }
 
 button {
@@ -135,11 +148,7 @@ button:disabled {
   height: 320px;
   border-radius: 14px;
   border: 1px solid rgba(148, 163, 184, 0.25);
-  background: linear-gradient(
-    160deg,
-    rgba(30, 41, 59, 0.9),
-    rgba(15, 23, 42, 0.85)
-  );
+  background: linear-gradient(160deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.85));
   overflow: hidden;
 }
 
@@ -269,4 +278,438 @@ button:disabled {
 }
 #name-form button {
   margin-top: 20px;
+}
+
+.difficulty-section {
+  margin: 20px 0;
+}
+
+.difficulty-section label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.difficulty-btn {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: none !important; /* 기본 button 그라데이션 제거 */
+  width: auto;
+}
+
+/* Easy - 초록색 */
+.difficulty-btn[data-difficulty="easy"] {
+  border-color: #10b981 !important;
+  background-color: rgba(16, 185, 129, 0.1) !important;
+  color: #10b981 !important;
+}
+
+.difficulty-btn[data-difficulty="easy"]:hover {
+  background-color: rgba(16, 185, 129, 0.2) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.difficulty-btn[data-difficulty="easy"].active {
+  background-color: #10b981 !important;
+  color: white !important;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+/* Normal - 주황색 */
+.difficulty-btn[data-difficulty="normal"] {
+  border-color: #f59e0b !important;
+  background-color: rgba(245, 158, 11, 0.1) !important;
+  color: #f59e0b !important;
+}
+
+.difficulty-btn[data-difficulty="normal"]:hover {
+  background-color: rgba(245, 158, 11, 0.2) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.difficulty-btn[data-difficulty="normal"].active {
+  background-color: #f59e0b !important;
+  color: white !important;
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+
+/* Hard - 빨간색 */
+.difficulty-btn[data-difficulty="hard"] {
+  border-color: #ef4444 !important;
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+
+.difficulty-btn[data-difficulty="hard"]:hover {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.difficulty-btn[data-difficulty="hard"].active {
+  background-color: #ef4444 !important;
+  color: white !important;
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+/* 랭킹 카드 */
+.ranking-card {
+  margin-top: 24px;
+}
+
+.ranking-card h2 {
+  margin: 0 0 20px;
+  font-size: 1.5rem;
+  text-align: center;
+  color: #fbbf24;
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.ranking-item:hover {
+  background: rgba(30, 41, 59, 0.7);
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.ranking-item.current {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: #3b82f6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+.ranking-item .rank {
+  min-width: 40px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fbbf24;
+}
+
+.ranking-item .player-name {
+  flex: 1;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.ranking-item .score {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #38bdf8;
+}
+
+.difficulty-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.difficulty-badge.easy {
+  background: #10b981;
+  color: white;
+}
+
+.difficulty-badge.normal {
+  background: #f59e0b;
+  color: white;
+}
+
+.difficulty-badge.hard {
+  background: #ef4444;
+  color: white;
+}
+
+/* ========================================
+   반응형 디자인 - 모바일 대응
+   ======================================== */
+
+/* 태블릿 (768px 이하) */
+@media (max-width: 768px) {
+  body {
+    align-items: flex-start;
+    padding: 20px 0;
+  }
+
+  #app {
+    width: 95vw;
+  }
+
+  .main-card {
+    padding: 24px 20px;
+    border-radius: 14px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 14px;
+  }
+
+  .game-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .stat-block {
+    min-width: calc(50% - 5px);
+  }
+
+  .game-area {
+    height: 350px;
+  }
+
+  .word {
+    font-size: 1rem;
+    padding: 8px 14px;
+  }
+
+  .ranking-item {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .ranking-item .rank {
+    min-width: 35px;
+    font-size: 1rem;
+  }
+
+  .ranking-item .score {
+    font-size: 1rem;
+  }
+
+  .difficulty-badge {
+    padding: 3px 8px;
+    font-size: 0.7rem;
+  }
+}
+
+/* 모바일 (480px 이하) */
+@media (max-width: 480px) {
+  body {
+    padding: 10px 0;
+    min-height: 100svh; /* 모바일 주소창 고려 */
+  }
+
+  #app {
+    width: 100vw;
+  }
+
+  .main-card {
+    padding: 20px 16px;
+    border-radius: 12px;
+    margin: 0;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+  }
+
+  p {
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+  }
+
+  button {
+    padding: 12px 16px;
+    font-size: 0.95rem;
+  }
+
+  input[type="text"] {
+    padding: 12px 14px;
+    font-size: 0.95rem;
+  }
+
+  /* 게임 화면 최적화 */
+  .game-header {
+    gap: 8px;
+  }
+
+  .stat-block {
+    min-width: 100%;
+    padding: 10px 14px;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
+  }
+
+  .game-area {
+    height: 300px;
+    margin: 12px 0;
+  }
+
+  .word {
+    font-size: 0.9rem;
+    padding: 6px 12px;
+  }
+
+  .game-input {
+    gap: 8px;
+  }
+
+  #skip-button {
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    min-width: 70px;
+  }
+
+  /* 결과 화면 최적화 */
+  .result-score {
+    font-size: 2.5rem;
+  }
+
+  .result-details {
+    gap: 8px;
+  }
+
+  .result-row {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+
+  /* 랭킹 최적화 */
+  .ranking-card {
+    margin-top: 16px;
+  }
+
+  .ranking-card h2 {
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+  }
+
+  .ranking-item {
+    flex-wrap: nowrap;
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .ranking-item .rank {
+    min-width: 30px;
+    font-size: 0.9rem;
+  }
+
+  .ranking-item .player-name {
+    font-size: 0.9rem;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ranking-item .score {
+    font-size: 0.95rem;
+  }
+
+  .difficulty-badge {
+    padding: 2px 6px;
+    font-size: 0.65rem;
+  }
+
+  /* 카운트다운 최적화 */
+  .countdown-number {
+    font-size: clamp(2.5rem, 15vw, 5rem);
+  }
+
+  /* 난이도 선택 버튼 */
+  .difficulty-container {
+    gap: 8px;
+  }
+
+  .difficulty-btn {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+}
+
+/* 초소형 모바일 (360px 이하) */
+@media (max-width: 360px) {
+  .main-card {
+    padding: 16px 12px;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+  }
+
+  .game-area {
+    height: 250px;
+  }
+
+  .word {
+    font-size: 0.85rem;
+    padding: 5px 10px;
+  }
+
+  .ranking-item .player-name {
+    max-width: 60px;
+  }
+
+  .result-score {
+    font-size: 2rem;
+  }
+}
+
+/* 가로 모드 최적화 (모바일) */
+@media (max-height: 600px) and (orientation: landscape) {
+  body {
+    align-items: flex-start;
+    padding: 10px 0;
+  }
+
+  .main-card {
+    padding: 16px 20px;
+  }
+
+  .game-area {
+    height: 200px;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+  }
+
+  .stat-block {
+    padding: 8px 12px;
+  }
+
+  .countdown-number {
+    font-size: clamp(2rem, 8vh, 4rem);
+  }
 }

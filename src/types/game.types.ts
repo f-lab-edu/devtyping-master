@@ -21,8 +21,8 @@ export interface GameState {
   words: WordState[];
   area: HTMLDivElement;
   remainingTime: number;
-  lastHitWordId: string | null; //맞춘단어
-  lastMissWordId: string | null; // 놓친단어
+  lastHitWordId: string[];
+  lastMissWordId: string[];
 
   input: HTMLInputElement;
   timerDisplay: HTMLElement;
@@ -31,8 +31,20 @@ export interface GameState {
   skipButton: HTMLButtonElement;
   running: boolean;
 }
+
+export type Difficulty = "easy" | "normal" | "hard";
+
+export interface ScoreRecord {
+  playerName: string;
+  score: number;
+  accuracy: number;
+  difficulty: Difficulty;
+  timestamp: number;
+}
+
 export interface AppState {
   view: "name" | "countdown" | "game" | "result";
+  difficulty: Difficulty;
   playerName: string;
   countdownValue: number;
   game: GameState | null;
