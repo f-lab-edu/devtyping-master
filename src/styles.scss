@@ -1,0 +1,803 @@
+// ========================================
+// 변수 정의
+// ========================================
+
+// 색상
+$bg-primary: #0f172a;
+$bg-secondary: #1e293b;
+$bg-card: rgba(15, 23, 42, 0.85);
+$bg-input: rgba(15, 23, 42, 0.6);
+$bg-stat: rgba(15, 23, 42, 0.6);
+
+$border-color: rgba(148, 163, 184, 0.3);
+$border-color-light: rgba(148, 163, 184, 0.25);
+$border-color-input: rgba(148, 163, 184, 0.4);
+
+$text-primary: #f8fafc;
+$text-secondary: #cbd5f5;
+$text-muted: #94a3b8;
+
+// 난이도 색상
+$color-easy: #10b981;
+$color-normal: #f59e0b;
+$color-hard: #ef4444;
+
+// 게임 색상
+$color-word: #38bdf8;
+$color-hit: #22c55e;
+$color-miss: #f87171;
+$color-gold: #fbbf24;
+
+// 그라데이션
+$gradient-primary: linear-gradient(135deg, #38bdf8, #2563eb);
+$gradient-bg: radial-gradient(circle at top, #1e293b, #0f172a 55%);
+$gradient-game-area: linear-gradient(160deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.85));
+
+// 간격
+$spacing-xs: 6px;
+$spacing-sm: 8px;
+$spacing-md: 12px;
+$spacing-lg: 16px;
+$spacing-xl: 20px;
+$spacing-2xl: 24px;
+
+// 라운드
+$radius-sm: 8px;
+$radius-md: 10px;
+$radius-lg: 12px;
+$radius-xl: 14px;
+$radius-2xl: 18px;
+$radius-full: 999px;
+
+// 미디어 쿼리 브레이크포인트
+$breakpoint-tablet: 768px;
+$breakpoint-mobile: 480px;
+$breakpoint-small: 360px;
+$breakpoint-landscape: 600px;
+
+// ========================================
+// 믹스인
+// ========================================
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin transition($property: all, $duration: 0.3s) {
+  transition: $property $duration ease;
+}
+
+@mixin hover-lift {
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.35);
+  }
+}
+
+// 난이도 버튼 믹스인
+@mixin difficulty-button($color) {
+  border-color: $color !important;
+  background-color: rgba($color, 0.1) !important;
+  color: $color !important;
+
+  &:hover {
+    background-color: rgba($color, 0.2) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($color, 0.3);
+  }
+
+  &.active {
+    background-color: $color !important;
+    color: white !important;
+    box-shadow: 0 6px 16px rgba($color, 0.4);
+  }
+}
+
+// ========================================
+// 기본 스타일
+// ========================================
+
+:root {
+  color-scheme: light dark;
+  font-family: "Segoe UI", "Noto Sans KR", sans-serif;
+  background-color: $bg-primary;
+  color: $text-primary;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  @include flex-center;
+  background: $gradient-bg;
+}
+
+#app {
+  width: min(720px, 92vw);
+}
+
+.main-card {
+  background: $bg-card;
+  border: 1px solid $border-color;
+  border-radius: $radius-2xl;
+  padding: 36px 32px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(6px);
+}
+
+// ========================================
+// 타이포그래피
+// ========================================
+
+h1 {
+  margin: 0 0 18px;
+  font-size: 1.8rem;
+  letter-spacing: 0.04rem;
+  text-align: center;
+}
+
+p {
+  margin: 0 0 $spacing-lg;
+  color: $text-secondary;
+  text-align: center;
+}
+
+label {
+  display: block;
+  margin-bottom: $spacing-md;
+  font-weight: 600;
+}
+
+// ========================================
+// 폼 요소
+// ========================================
+
+input[type="text"] {
+  width: 100%;
+  padding: 14px $spacing-lg;
+  border-radius: $radius-lg;
+  border: 1px solid $border-color-input;
+  background: $bg-input;
+  color: inherit;
+  font-size: 1rem;
+  @include transition;
+
+  &.error {
+    border-color: $color-hard;
+    background: rgba(239, 68, 68, 0.15);
+    animation: shake 0.3s ease;
+  }
+}
+
+button {
+  appearance: none;
+  background: $gradient-primary;
+  border: none;
+  border-radius: $radius-lg;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 14px $spacing-xl;
+  width: 100%;
+  @include transition(transform 0.2s);
+  @include hover-lift;
+
+  + button {
+    margin-top: $spacing-md;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+// ========================================
+// 애니메이션
+// ========================================
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-10px);
+  }
+  75% {
+    transform: translateX(10px);
+  }
+}
+
+@keyframes hitEffect {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes missEffect {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-10px);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+  75% {
+    transform: translateX(-10px);
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+}
+
+// ========================================
+// 화면 레이아웃
+// ========================================
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xl;
+}
+
+.countdown-number {
+  font-size: clamp(3rem, 10vw, 6rem);
+  text-align: center;
+  font-weight: 700;
+  margin-top: $spacing-2xl;
+}
+
+// ========================================
+// 게임 화면
+// ========================================
+
+.game-header {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  text-align: center;
+  align-items: center;
+}
+
+.stat-block {
+  background: $bg-stat;
+  padding: $spacing-md $spacing-lg;
+  border-radius: $radius-lg;
+  border: 1px solid $border-color-light;
+
+  .stat-label {
+    display: block;
+    font-size: 0.85rem;
+    color: $text-muted;
+  }
+
+  .stat-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-top: $spacing-xs;
+  }
+}
+
+.game-area {
+  position: relative;
+  height: 320px;
+  border-radius: $radius-xl;
+  border: 1px solid $border-color-light;
+  background: $gradient-game-area;
+  overflow: hidden;
+}
+
+.word {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-md;
+  background: rgba($color-word, 0.1);
+  border: 1px solid rgba($color-word, 0.4);
+  color: #e0f2fe;
+  font-weight: 600;
+  transition: transform 0.12s linear;
+
+  &.hit {
+    background: rgba($color-hit, 0.18);
+    border-color: rgba($color-hit, 0.6);
+    color: #bbf7d0;
+    animation: hitEffect 180ms ease-out forwards;
+  }
+
+  &.miss {
+    background: rgba($color-miss, 0.2);
+    border-color: rgba($color-miss, 0.7);
+    color: #fecaca;
+    animation: missEffect 240ms ease-out forwards;
+  }
+}
+
+.game-input {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: 18px;
+  align-items: center;
+
+  input {
+    flex: 1;
+    min-width: 0;
+    padding: 14px $spacing-lg;
+    border-radius: $radius-lg;
+    border: 1px solid $border-color-input;
+    background: rgba(15, 23, 42, 0.65);
+    color: inherit;
+    font-size: 1.05rem;
+  }
+
+  button {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 108px;
+    padding: $spacing-md 18px;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: rgba(148, 163, 184, 0.2);
+    }
+  }
+}
+
+// ========================================
+// 결과 화면
+// ========================================
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-full;
+  background: rgba($color-word, 0.15);
+  color: #e0f2fe;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.result-score {
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 700;
+  text-align: center;
+}
+
+.result-details {
+  display: grid;
+  gap: $spacing-md;
+  margin: $spacing-2xl 0 $spacing-md;
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  padding: $spacing-md 14px;
+  border-radius: $radius-md;
+  background: $bg-stat;
+  border: 1px solid $border-color-light;
+}
+
+// ========================================
+// 난이도 선택
+// ========================================
+
+#name-form button {
+  margin-top: $spacing-xl;
+}
+
+.difficulty-section {
+  margin: $spacing-xl 0;
+
+  label {
+    display: block;
+    margin-bottom: $spacing-md;
+    font-weight: 500;
+  }
+}
+
+.button-group {
+  display: flex;
+  gap: $spacing-md;
+  justify-content: center;
+}
+
+.difficulty-btn {
+  flex: 1;
+  padding: $spacing-md;
+  border: 2px solid;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  @include transition;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: none !important;
+  width: auto;
+
+  &[data-difficulty="easy"] {
+    @include difficulty-button($color-easy);
+  }
+
+  &[data-difficulty="normal"] {
+    @include difficulty-button($color-normal);
+  }
+
+  &[data-difficulty="hard"] {
+    @include difficulty-button($color-hard);
+  }
+}
+
+// ========================================
+// 랭킹 시스템
+// ========================================
+
+.ranking-card {
+  margin-top: $spacing-2xl;
+
+  h2 {
+    margin: 0 0 $spacing-xl;
+    font-size: 1.5rem;
+    text-align: center;
+    color: $color-gold;
+  }
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid $border-color-light;
+  border-radius: $radius-md;
+  @include transition(all, 0.2s);
+
+  &:hover {
+    background: rgba(30, 41, 59, 0.7);
+    border-color: $border-color-input;
+  }
+
+  &.current {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: #3b82f6;
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+  }
+
+  .rank {
+    min-width: 40px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: $color-gold;
+  }
+
+  .player-name {
+    flex: 1;
+    font-weight: 600;
+    color: $text-primary;
+  }
+
+  .score {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: $color-word;
+  }
+}
+
+.difficulty-badge {
+  padding: 4px 10px;
+  border-radius: $radius-lg;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  &.easy {
+    background: $color-easy;
+    color: white;
+  }
+
+  &.normal {
+    background: $color-normal;
+    color: white;
+  }
+
+  &.hard {
+    background: $color-hard;
+    color: white;
+  }
+}
+
+// ========================================
+// 반응형 디자인
+// ========================================
+
+// 태블릿
+@media (max-width: $breakpoint-tablet) {
+  body {
+    align-items: flex-start;
+    padding: $spacing-xl 0;
+  }
+
+  #app {
+    width: 95vw;
+  }
+
+  .main-card {
+    padding: $spacing-2xl $spacing-xl;
+    border-radius: $radius-xl;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 14px;
+  }
+
+  .game-header {
+    flex-wrap: wrap;
+    gap: $spacing-md;
+  }
+
+  .stat-block {
+    min-width: calc(50% - 5px);
+  }
+
+  .game-area {
+    height: 350px;
+  }
+
+  .word {
+    font-size: 1rem;
+    padding: $spacing-sm 14px;
+  }
+
+  .ranking-item {
+    padding: $spacing-md $spacing-md;
+    gap: $spacing-sm;
+
+    .rank {
+      min-width: 35px;
+      font-size: 1rem;
+    }
+
+    .score {
+      font-size: 1rem;
+    }
+  }
+
+  .difficulty-badge {
+    padding: 3px $spacing-sm;
+    font-size: 0.7rem;
+  }
+}
+
+// 모바일
+@media (max-width: $breakpoint-mobile) {
+  body {
+    padding: $spacing-md 0;
+    min-height: 100svh;
+  }
+
+  #app {
+    width: 100vw;
+  }
+
+  .main-card {
+    padding: $spacing-xl $spacing-lg;
+    border-radius: $radius-lg;
+    margin: 0;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+    margin-bottom: $spacing-md;
+  }
+
+  p {
+    font-size: 0.9rem;
+    margin-bottom: $spacing-md;
+  }
+
+  button {
+    padding: $spacing-md $spacing-lg;
+    font-size: 0.95rem;
+  }
+
+  input[type="text"] {
+    padding: $spacing-md 14px;
+    font-size: 0.95rem;
+  }
+
+  .game-header {
+    gap: $spacing-sm;
+  }
+
+  .stat-block {
+    min-width: 100%;
+    padding: $spacing-md 14px;
+
+    .stat-label {
+      font-size: 0.8rem;
+    }
+
+    .stat-value {
+      font-size: 1.1rem;
+    }
+  }
+
+  .game-area {
+    height: 300px;
+    margin: $spacing-md 0;
+  }
+
+  .word {
+    font-size: 0.9rem;
+    padding: $spacing-xs $spacing-md;
+  }
+
+  .game-input {
+    gap: $spacing-sm;
+
+    #skip-button {
+      padding: $spacing-md 14px;
+      font-size: 0.85rem;
+      min-width: 70px;
+    }
+  }
+
+  .result-score {
+    font-size: 2.5rem;
+  }
+
+  .result-details {
+    gap: $spacing-sm;
+  }
+
+  .result-row {
+    padding: $spacing-md 14px;
+    font-size: 0.9rem;
+  }
+
+  .ranking-card {
+    margin-top: $spacing-lg;
+
+    h2 {
+      font-size: 1.3rem;
+      margin-bottom: $spacing-lg;
+    }
+  }
+
+  .ranking-item {
+    flex-wrap: nowrap;
+    padding: $spacing-sm $spacing-md;
+    gap: $spacing-xs;
+
+    .rank {
+      min-width: 30px;
+      font-size: 0.9rem;
+    }
+
+    .player-name {
+      font-size: 0.9rem;
+      max-width: 80px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .score {
+      font-size: 0.95rem;
+    }
+  }
+
+  .difficulty-badge {
+    padding: 2px $spacing-xs;
+    font-size: 0.65rem;
+  }
+
+  .countdown-number {
+    font-size: clamp(2.5rem, 15vw, 5rem);
+  }
+
+  .difficulty-container {
+    gap: $spacing-sm;
+  }
+
+  .difficulty-btn {
+    padding: $spacing-md 14px;
+    font-size: 0.85rem;
+  }
+}
+
+// 초소형 모바일
+@media (max-width: $breakpoint-small) {
+  .main-card {
+    padding: $spacing-lg $spacing-md;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+  }
+
+  .game-area {
+    height: 250px;
+  }
+
+  .word {
+    font-size: 0.85rem;
+    padding: 5px $spacing-md;
+  }
+
+  .ranking-item .player-name {
+    max-width: 60px;
+  }
+
+  .result-score {
+    font-size: 2rem;
+  }
+}
+
+// 가로 모드 최적화
+@media (max-height: $breakpoint-landscape) and (orientation: landscape) {
+  body {
+    align-items: flex-start;
+    padding: $spacing-md 0;
+  }
+
+  .main-card {
+    padding: $spacing-lg $spacing-xl;
+  }
+
+  .game-area {
+    height: 200px;
+  }
+
+  h1 {
+    font-size: 1.2rem;
+    margin-bottom: $spacing-sm;
+  }
+
+  .stat-block {
+    padding: $spacing-sm $spacing-md;
+  }
+
+  .countdown-number {
+    font-size: clamp(2rem, 8vh, 4rem);
+  }
+}
+
+@media (max-width: 520px) {
+  .game-header {
+    grid-template-columns: 1fr;
+  }
+}
